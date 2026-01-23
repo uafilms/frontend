@@ -183,7 +183,7 @@ const Settings = () => {
             )}
         </div>
 
-        {/* Спільнота та Підтримка (без змін) */}
+        {/* Спільнота та Підтримка */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--md-sys-color-primary-container)', color: 'var(--md-sys-color-on-primary-container)', padding: '24px', borderRadius: '24px' }}>
                 <div>
@@ -213,6 +213,37 @@ const Settings = () => {
                     style={{ alignSelf: 'flex-start', '--md-filled-button-container-color': 'var(--md-sys-color-tertiary)', '--md-filled-button-label-text-color': 'var(--md-sys-color-on-tertiary)' }}
                 >
                     Підтримати автора
+                </md-filled-button>
+            </div>
+
+            {/* НОВИЙ БЛОК API - додано в тому ж стилі сітки */}
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'space-between', 
+                background: 'var(--md-sys-color-secondary-container)', 
+                color: 'var(--md-sys-color-on-secondary-container)', 
+                padding: '24px', 
+                borderRadius: '24px',
+                gridColumn: '1 / -1' // Розтягуємо на всю ширину сітки, якщо хочете окремим рядком
+            }}>
+                <div>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <md-icon>api</md-icon> API Документація
+                    </h3>
+                    <p style={{ margin: '0 0 24px 0', fontSize: '14px', opacity: 0.9, lineHeight: '1.5' }}>
+                        Створюйте власні рішення на базі нашого сервісу за допомогою публічного API.
+                    </p>
+                </div>
+                <md-filled-button 
+                    onClick={() => window.open('https://bfilms.aartzz.pp.ua', '_blank')}
+                    style={{ 
+                        alignSelf: 'flex-start', 
+                        '--md-filled-button-container-color': 'var(--md-sys-color-secondary)', 
+                        '--md-filled-button-label-text-color': 'var(--md-sys-color-on-secondary)' 
+                    }}
+                >
+                    Відкрити
                 </md-filled-button>
             </div>
         </div>
