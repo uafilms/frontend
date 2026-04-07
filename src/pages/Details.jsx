@@ -25,54 +25,54 @@ const formatProviderName = (provider) => {
 
 const mergeData = (prev, incoming) => {
     if (!prev) return incoming;
+    const next = { ...prev };
     
-    const next = { ...prev, ...incoming };
-
-    if (incoming.sources) {
-        next.sources = [...(prev.sources || []), ...incoming.sources];
-    } else {
-        next.sources = prev.sources;
+    // Merge provider data from SSE chunks
+    if (incoming.provider) {
+        if (!next.providers) next.providers = {};
+        const prov = incoming.provider;
+        
+        if (incoming.sources) {
+            // Movie: merge source arrays
+            next.providers[prov] = [
+                ...(next.providers[prov] || []),
+                ...incoming.sources
+            ];
+        } else if (incoming.seasons) {
+            // TV: merge season→episode maps
+            if (!next.providers[prov]) next.providers[prov] = {};
+            const existing = next.providers[prov];
+            for (const [sNum, episodes] of Object.entries(incoming.seasons)) {
+                if (!existing[sNum]) existing[sNum] = {};
+                for (const [eNum, sources] of Object.entries(episodes)) {
+                    existing[sNum][eNum] = [
+                        ...(existing[sNum][eNum] || []),
+                        ...sources
+                    ];
+                }
+            }
+        }
     }
     
-    if (incoming.seasons) {
-        const prevSeasons = prev.seasons || [];
-        const newSeasons = [...prevSeasons];
-
-        incoming.seasons.forEach(incSeason => {
-            const existingSeasonIndex = newSeasons.findIndex(s => s.number === incSeason.number);
-            
-            if (existingSeasonIndex === -1) {
-                newSeasons.push(incSeason);
-            } else {
-                const existingSeason = { ...newSeasons[existingSeasonIndex] };
-                const prevEpisodes = existingSeason.episodes || [];
-                const newEpisodes = [...prevEpisodes];
-
-                incSeason.episodes.forEach(incEp => {
-                    const existingEpIndex = newEpisodes.findIndex(e => e.episode === incEp.episode);
-                    
-                    if (existingEpIndex === -1) {
-                        newEpisodes.push(incEp);
-                    } else {
-                        const existingEp = { ...newEpisodes[existingEpIndex] };
-                        const existingUrls = new Set((existingEp.sources || []).map(s => s.url));
-                        const uniqueNewSources = incEp.sources.filter(s => !existingUrls.has(s.url));
-                        
-                        existingEp.sources = [...(existingEp.sources || []), ...uniqueNewSources];
-                        newEpisodes[existingEpIndex] = existingEp;
+    // Merge full providers object (from non-SSE or initial)
+    if (incoming.providers) {
+        if (!next.providers) next.providers = {};
+        for (const [prov, data] of Object.entries(incoming.providers)) {
+            if (Array.isArray(data)) {
+                next.providers[prov] = [...(next.providers[prov] || []), ...data];
+            } else if (data && typeof data === 'object') {
+                if (!next.providers[prov]) next.providers[prov] = {};
+                for (const [sNum, episodes] of Object.entries(data)) {
+                    if (!next.providers[prov][sNum]) next.providers[prov][sNum] = {};
+                    for (const [eNum, sources] of Object.entries(episodes)) {
+                        next.providers[prov][sNum][eNum] = [
+                            ...(next.providers[prov][sNum][eNum] || []),
+                            ...sources
+                        ];
                     }
-                });
-                
-                newEpisodes.sort((a, b) => a.episode - b.episode);
-                existingSeason.episodes = newEpisodes;
-                newSeasons[existingSeasonIndex] = existingSeason;
+                }
             }
-        });
-        
-        newSeasons.sort((a, b) => a.number - b.number);
-        next.seasons = newSeasons;
-    } else {
-        next.seasons = prev.seasons;
+        }
     }
     
     return next;
@@ -101,30 +101,17 @@ const Details = () => {
   const [error, setError] = useState(null);
 
   const processSources = (currentData) => {
-    if (!currentData) return;
-    const sourcesSet = new Set();
-    
-    if (currentData.type === 'movie' && currentData.sources) {
-        currentData.sources.forEach(source => sourcesSet.add(source.provider));
-    } else if (currentData.seasons) {
-        currentData.seasons.forEach(season => {
-            season.episodes.forEach(episode => {
-                episode.sources.forEach(source => sourcesSet.add(source.provider));
-            });
-        });
-    }
-    
-    const sourcesList = Array.from(sourcesSet);
-    const priority = ['ashdi', 'tortuga', 'hdvb', 'uaflix', 'moonanime', 'uembed', 'cinemaos'];
+    if (!currentData || !currentData.providers) return;
+    const sourcesList = Object.keys(currentData.providers);
+    const priority = ['ashdi', 'tortuga', 'hdvb', 'uaflix', 'moonanime', 'uembed'];
     sourcesList.sort((a, b) => {
         const idxA = priority.indexOf(a);
         const idxB = priority.indexOf(b);
         return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
     });
-
     setAvailableSources(sourcesList);
     if (sourcesList.length > 0 && !selectedSource) {
-         setSelectedSource(sourcesList[0]);
+        setSelectedSource(sourcesList[0]);
     }
   };
 
@@ -238,8 +225,8 @@ const Details = () => {
     } else {
       const minData = {
         id: data.id,
-        title: data.title || data.original_title,
-        poster_path: data.poster_path,
+        title: data.title || data.originalTitle,
+        poster_path: data.posterUrl,
         release_date: data.year + '-',
         media_type: type
       };
@@ -267,9 +254,7 @@ const Details = () => {
       );
   }
 
-  const backdropUrl = data?.backdrop_path 
-    ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}` 
-    : '';
+  const backdropUrl = data?.backdropUrl || '';
 
     const settings = JSON.parse(localStorage.getItem('uafilms_settings') || '{}');
         let engParam = 0;
@@ -323,14 +308,14 @@ const Details = () => {
             <md-assist-chip label={data.year?.toString() || '-'}></md-assist-chip>
             <md-assist-chip label={type === 'movie' ? 'Фільм' : 'Серіал'}></md-assist-chip>
             
-            {data.imdb_rating && (
-                <md-assist-chip label={data.imdb_rating.toString()}>
+            {data.imdbRating && (
+                <md-assist-chip label={data.imdbRating.toString()}>
                     <md-icon slot="icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</md-icon>
                 </md-assist-chip>
             )}
             
             {data.genres && data.genres.length > 0 && (
-                <md-assist-chip label={data.genres.map(g => g.name).join(', ')}></md-assist-chip>
+                <md-assist-chip label={data.genres.join(', ')}></md-assist-chip>
             )}
         </div>
 
@@ -395,14 +380,13 @@ const Details = () => {
             id={data.id}
             type={type}
             title={data.title} 
-            originalTitle={data.original_title} 
+            originalTitle={data.originalTitle}
             year={data.year}
-            seasons={data.seasons} 
-            sources={data.sources}
+            providers={data.providers}
         />
 
         <div style={{ marginTop: '40px' }}>
-             <Comments title={data.title} imdbId={data.imdb_id} />
+             <Comments title={data.title} imdbId={data.imdbId} />
         </div>
 
       </div>

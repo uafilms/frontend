@@ -30,7 +30,8 @@ const formatProviderName = (provider) => {
         'tortuga': 'Tortuga',
         'hdvb': 'HDVB',
         'uaflix': 'UAFlix',
-        'moonanime': 'MoonAnime'
+        'moonanime': 'MoonAnime',
+        'uembed': '🇬🇧 UEmbed',
     };
     return map[provider] || provider.charAt(0).toUpperCase() + provider.slice(1);
 };
@@ -133,7 +134,7 @@ const getVideoBadges = (item) => {
     return [...new Map(badges.map(item => [item.icon, item])).values()];
 };
 
-const Downloader = ({ id, title, originalTitle, year, type, seasons, sources, onClose }) => {
+const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }) => {
     const [activeTab, setActiveTab] = useState('providers');
     const [selectedProvider, setSelectedProvider] = useState(null);
     const [cfToken, setCfToken] = useState(null);
@@ -188,36 +189,15 @@ const Downloader = ({ id, title, originalTitle, year, type, seasons, sources, on
     }, []);
 
     const availableProviders = useMemo(() => {
-        const providers = new Set();
-        // ВАЖЛИВО: Перевіряємо sources незалежно від type, щоб уникнути помилок, якщо тип не передано
-        if (sources && Array.isArray(sources) && sources.length > 0) {
-            sources.forEach(src => {
-                 if (src && src.provider) providers.add(src.provider);
-            });
-        } 
-        
-        // Перевіряємо seasons (TV) і мерджимо провайдери, якщо вони є
-        if (seasons && Array.isArray(seasons)) {
-            seasons.forEach(s => {
-                if (s.episodes && Array.isArray(s.episodes)) {
-                    s.episodes.forEach(e => {
-                        if (e.sources && Array.isArray(e.sources)) {
-                            e.sources.forEach(src => {
-                                if (src && src.provider) providers.add(src.provider);
-                            });
-                        }
-                    });
-                }
-            });
-        }
-        const list = Array.from(providers);
-        const order = ['ashdi', 'tortuga', 'hdvb', 'uaflix', 'moonanime'];
+        if (!providers || typeof providers !== 'object') return [];
+        const list = Object.keys(providers);
+        const order = ['ashdi', 'tortuga', 'hdvb', 'uaflix', 'moonanime', 'uembed'];
         return list.sort((a, b) => {
             const indexA = order.indexOf(a);
             const indexB = order.indexOf(b);
             return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
         });
-    }, [seasons, sources]); // Прибрав type із залежностей, щоб не ламало логіку
+    }, [providers]);
 
     useEffect(() => {
         if (availableProviders.length > 0 && !selectedProvider) {
@@ -460,21 +440,24 @@ const Downloader = ({ id, title, originalTitle, year, type, seasons, sources, on
 
     const getStreamUrl = (provider, isMovie, sNum, eNum) => {
         let foundSource = null;
+        if (!providers || !providers[provider]) return null;
+
+        const provData = providers[provider];
+
         if (isMovie) {
-            if (sources && Array.isArray(sources)) {
-                foundSource = sources.find(s => s.provider === provider);
+            // Movie: providers[provider] is an array of sources
+            if (Array.isArray(provData) && provData.length > 0) {
+                foundSource = provData[0];
             }
         } else {
-            if (seasons && Array.isArray(seasons)) {
-                const seasonObj = seasons.find(s => s.number === sNum);
-                if (seasonObj) {
-                    const epObj = seasonObj.episodes.find(e => e.episode === eNum);
-                    if (epObj && epObj.sources) {
-                        foundSource = epObj.sources.find(s => s.provider === provider);
-                    }
-                }
+            // TV: providers[provider] is { "1": { "1": [...], "2": [...] } }
+            const sKey = String(sNum);
+            const eKey = String(eNum);
+            if (provData[sKey] && provData[sKey][eKey] && provData[sKey][eKey].length > 0) {
+                foundSource = provData[sKey][eKey][0];
             }
         }
+
         if (!foundSource || !foundSource.url) return null;
         
         let url = foundSource.url;
@@ -589,9 +572,11 @@ const Downloader = ({ id, title, originalTitle, year, type, seasons, sources, on
     };
 
     const toggleSeason = (seasonNum) => {
-        const sObj = seasons.find(s => s.number === seasonNum);
+        if (!providers || !selectedProvider || !providers[selectedProvider]) return;
+        const sKey = String(seasonNum);
+        const sObj = providers[selectedProvider][sKey];
         if (!sObj) return;
-        const allEps = sObj.episodes.map(e => e.episode);
+        const allEps = Object.keys(sObj).map(Number);
         const current = selectedEpisodes[seasonNum] || [];
         if (current.length === allEps.length) {
             const newSelection = { ...selectedEpisodes };
@@ -603,15 +588,18 @@ const Downloader = ({ id, title, originalTitle, year, type, seasons, sources, on
     };
 
     const toggleAllSeries = () => {
-        if (!seasons) return;
+        if (!providers || !selectedProvider || !providers[selectedProvider]) return;
+        const provData = providers[selectedProvider];
         let totalEps = 0;
         let selectedCount = 0;
-        seasons.forEach(s => totalEps += s.episodes.length);
+        Object.values(provData).forEach(episodes => totalEps += Object.keys(episodes).length);
         Object.values(selectedEpisodes).forEach(arr => selectedCount += arr.length);
         if (selectedCount === totalEps) setSelectedEpisodes({});
         else {
             const newSelection = {};
-            seasons.forEach(s => newSelection[s.number] = s.episodes.map(e => e.episode));
+            Object.entries(provData).forEach(([sKey, episodes]) => {
+                newSelection[sKey] = Object.keys(episodes).map(Number);
+            });
             setSelectedEpisodes(newSelection);
         }
     };
@@ -743,7 +731,7 @@ const Downloader = ({ id, title, originalTitle, year, type, seasons, sources, on
                 </div>
             )}
 
-            {showSeriesModal && seasons && (
+            {showSeriesModal && providers && selectedProvider && providers[selectedProvider] && typeof providers[selectedProvider] === 'object' && !Array.isArray(providers[selectedProvider]) && (
                <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                     background: 'rgba(0,0,0,0.8)', zIndex: 9999,
@@ -765,9 +753,9 @@ const Downloader = ({ id, title, originalTitle, year, type, seasons, sources, on
                         </div>
 
                         <div style={{ flex: 1, overflowY: 'auto', margin: '16px 0' }}>
-                            {seasons.map(season => {
-                                const sNum = season.number;
-                                const allEps = season.episodes.map(e => e.episode);
+                            {Object.entries(providers[selectedProvider]).sort(([a], [b]) => Number(a) - Number(b)).map(([sKey, episodes]) => {
+                                const sNum = Number(sKey);
+                                const allEps = Object.keys(episodes).map(Number).sort((a, b) => a - b);
                                 const selectedInSeason = selectedEpisodes[sNum] || [];
                                 const isAllSelected = selectedInSeason.length === allEps.length;
 
