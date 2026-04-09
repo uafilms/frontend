@@ -128,7 +128,7 @@ const Details = () => {
     api.get(`/details?id=${id}&type=${type}`)
         .then(res => {
             if (active) {
-                setData(res.data);
+                setData(prev => prev ? { ...prev, ...res.data, providers: prev.providers || res.data.providers } : res.data);
                 setLoadingMeta(false);
                 const favorites = JSON.parse(localStorage.getItem('uafilms_favorites') || '[]');
                 setIsFav(favorites.some(f => f.id == res.data.id));
