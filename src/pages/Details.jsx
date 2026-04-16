@@ -171,22 +171,18 @@ const Details = () => {
             const decoder = new TextDecoder();
             let buffer = '';
 
-            while (active) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n\n');
-                buffer = lines.pop(); 
-
+            const processBuffer = (buf) => {
+                const lines = buf.split('\n\n');
                 for (const line of lines) {
-                    if (line.startsWith('event: complete')) {
+                    const trimmed = line.trim();
+                    if (!trimmed) continue;
+                    if (trimmed.startsWith('event: complete')) {
                         if (active) setLoadingSources(false);
-                        return;
+                        return true; // signal: stream complete
                     }
-                    if (line.startsWith('data: ')) {
+                    if (trimmed.startsWith('data: ')) {
                         try {
-                            const jsonStr = line.replace('data: ', '');
+                            const jsonStr = trimmed.replace('data: ', '');
                             if (jsonStr === '"done"') continue;
                             const chunk = JSON.parse(jsonStr);
                             if (active) {
@@ -196,10 +192,29 @@ const Details = () => {
                                     return newData;
                                 });
                             }
-                        } catch (e) { console.error('SSE Error', e); }
+                        } catch (e) { /* ignore parse errors */ }
                     }
                 }
+                return false;
+            };
+
+            while (active) {
+                const { value, done } = await reader.read();
+                if (done) {
+                    // Process remaining buffer before exiting
+                    if (buffer.trim()) processBuffer(buffer);
+                    break;
+                }
+                
+                buffer += decoder.decode(value, { stream: true });
+                const blocks = buffer.split('\n\n');
+                buffer = blocks.pop(); // keep incomplete tail
+
+                if (processBuffer(blocks.join('\n\n'))) return;
             }
+
+            // Safety: always stop loading when stream ends
+            if (active) setLoadingSources(false);
         } catch (err) {
             console.error('Sources error:', err);
             if (active) setLoadingSources(false);
