@@ -22,7 +22,6 @@ const MovieCard = ({ movie, isHero = false }) => {
 
   const imageUrl = isHero ? backdropUrl : posterUrl;
   
-  // Якщо немає URL або сталася помилка завантаження
   const showPlaceholder = !imageUrl || imgError;
 
   const width = isHero ? '100%' : '140px';
@@ -59,9 +58,9 @@ const MovieCard = ({ movie, isHero = false }) => {
             alt={movie.title || movie.name} 
             onError={() => setImgError(true)}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            loading="lazy"
           />
         ) : (
-          /* MD3 Placeholder Design */
           <div style={{
             width: '100%',
             height: '100%',

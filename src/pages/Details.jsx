@@ -33,13 +33,11 @@ const mergeData = (prev, incoming) => {
         const prov = incoming.provider;
         
         if (incoming.sources) {
-            // Movie: merge source arrays
             next.providers[prov] = [
                 ...(next.providers[prov] || []),
                 ...incoming.sources
             ];
         } else if (incoming.seasons) {
-            // TV: merge season→episode maps
             if (!next.providers[prov]) next.providers[prov] = {};
             const existing = next.providers[prov];
             for (const [sNum, episodes] of Object.entries(incoming.seasons)) {
@@ -54,7 +52,7 @@ const mergeData = (prev, incoming) => {
         }
     }
     
-    // Merge full providers object (from non-SSE or initial)
+    // Merge full providers object
     if (incoming.providers) {
         if (!next.providers) next.providers = {};
         for (const [prov, data] of Object.entries(incoming.providers)) {
@@ -153,12 +151,9 @@ const Details = () => {
             const token = await waitForTurnstileToken();
             if (!active) return;
 
-            // Отримуємо налаштування мови
             const settings = JSON.parse(localStorage.getItem('uafilms_settings') || '{}');
             let engParam = 0;
-            if (settings.engSource) {
-                engParam = settings.engMode === 'only_eng' ? 2 : 1;
-            }
+            if (settings.engSource) engParam = settings.engMode === 'only_eng' ? 2 : 1;
 
             let url = `${api.defaults.baseURL}/get?id=${id}&type=${type}&sse=1&eng=${engParam}`;
             if (token) url += `&token=${encodeURIComponent(token)}`;
@@ -255,12 +250,9 @@ const Details = () => {
   }
 
   const backdropUrl = data?.backdropUrl || '';
-
-    const settings = JSON.parse(localStorage.getItem('uafilms_settings') || '{}');
-        let engParam = 0;
-        if (settings.engSource) {
-            engParam = settings.engMode === 'only_eng' ? 2 : 1;
-        }
+  const settings = JSON.parse(localStorage.getItem('uafilms_settings') || '{}');
+  let engParam = 0;
+  if (settings.engSource) engParam = settings.engMode === 'only_eng' ? 2 : 1;
 
   let embedUrl = `${api.defaults.baseURL.replace('/api', '')}/embed?id=${id}&type=${type}`;
   if (window.cfToken) embedUrl += `&token=${encodeURIComponent(window.cfToken)}`;

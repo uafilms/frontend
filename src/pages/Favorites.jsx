@@ -5,7 +5,6 @@ const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    // Зчитуємо масив об'єктів
     const stored = JSON.parse(localStorage.getItem('uafilms_favorites') || '[]');
     setFavorites(stored);
   }, []);

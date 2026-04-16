@@ -5,19 +5,16 @@ const TurnstileWidget = () => {
   const widgetId = useRef(null);
   const [isVisible, setIsVisible] = useState(true);
 
-  // Отримуємо налаштування з .env (Vite)
   const IS_ENABLED = import.meta.env.VITE_TURNSTILE_ENABLED === 'true';
   const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
-    // 1. Якщо Turnstile вимкнено в конфігурації
     if (!IS_ENABLED) {
-        window.cfToken = 'disabled'; // Ставимо маркер, щоб Axios знав, що чекати не треба
+        window.cfToken = 'disabled';
         window.dispatchEvent(new Event('cf_token_ready'));
         return;
     }
 
-    // 2. Якщо увімкнено, працюємо за стандартною логікою
     window.cfToken = null;
 
     const initializeTurnstile = () => {
@@ -35,7 +32,6 @@ const TurnstileWidget = () => {
                 theme: 'dark',
                 appearance: 'always', 
                 callback: function(token) {
-                  console.log('Turnstile success');
                   window.cfToken = token;
                   window.dispatchEvent(new Event('cf_token_ready'));
 
@@ -44,12 +40,10 @@ const TurnstileWidget = () => {
                   }, 2500);
                 },
                 'expired-callback': function() {
-                  console.log('Turnstile expired');
                   window.cfToken = null;
                   setIsVisible(true);
                 },
                 'error-callback': function() {
-                   console.log('Turnstile error');
                 }
             });
         } catch (e) {
@@ -73,7 +67,6 @@ const TurnstileWidget = () => {
     };
   }, [IS_ENABLED, SITE_KEY]);
 
-  // Якщо Turnstile вимкнено або ми хочемо приховати віджет після успіху
   if (!IS_ENABLED) return null;
 
   return (

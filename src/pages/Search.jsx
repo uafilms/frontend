@@ -36,13 +36,11 @@ const Search = () => {
             setResults(prev => [...prev, ...res.data.results]);
         }
         
-        // Переконуємося, що отримуємо числа
         setTotalPages(Number(res.data.total_pages) || 0);
         setPage(Number(pageNum));
     } catch (err) { 
         console.error("Search error:", err); 
     } finally {
-        // finally гарантує, що loading стане false навіть при помилці мережі
         setLoading(false);
     }
   }, []);
@@ -84,7 +82,6 @@ const Search = () => {
   };
 
   const loadMore = (e) => {
-    // Зупиняємо спливання події для Custom Elements
     e && e.stopPropagation();
     if (page < totalPages && !loading) {
         performSearch(query, page + 1);
@@ -121,9 +118,6 @@ const Search = () => {
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px', paddingBottom: '32px' }}>
             <md-filled-tonal-button 
                 onClick={loadMore} 
-                /* Для Material Web Components в React краще передавати undefined, 
-                   щоб повністю видалити атрибут, коли він не потрібен 
-                */
                 disabled={loading ? true : undefined} 
                 style={{ cursor: loading ? 'default' : 'pointer' }}
             >

@@ -5,7 +5,6 @@ import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import { parseTorrentTitle } from '../utils/parser';
 
-// --- Material Web Imports ---
 import '@material/web/icon/icon.js';
 import '@material/web/checkbox/checkbox.js';
 import '@material/web/button/filled-tonal-button.js';
@@ -46,11 +45,9 @@ const formatBytes = (bytes) => {
 
 const cleanBadgeLabel = (label) => {
     if (!label) return '';
-    let cleaned = label.replace(/^([A-Za-zА-Яа-яїієґ0-9]+)\s?-\s?\1/i, '$1 -');
-    return cleaned;
+    return label.replace(/^([A-Za-zА-Яа-яїієґ0-9]+)\s?-\s?\1/i, '$1 -');
 };
 
-// --- Helper: Clean Track Title ---
 const cleanTrackTitle = (title) => {
     if (!title) return '';
     let cleaned = title
@@ -73,7 +70,6 @@ const formatLang = (lang) => {
     return lang.toUpperCase().slice(0, 3);
 };
 
-// --- Helper Functions for Icons ---
 const getQualityIcon = (title, ffprobe, mediaInfo) => {
     const lowerTitle = title.toLowerCase();
     
@@ -139,11 +135,9 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
     const [selectedProvider, setSelectedProvider] = useState(null);
     const [cfToken, setCfToken] = useState(null);
 
-    // --- TORRENTS STATE ---
     const [torrents, setTorrents] = useState([]);
     const [loadingTorrents, setLoadingTorrents] = useState(false);
     
-    // Filters State
     const [filterTracker, setFilterTracker] = useState('All');
     const [filterQuality, setFilterQuality] = useState('All');
     const [filterCodec, setFilterCodec] = useState('All');
@@ -151,7 +145,6 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
     const [filterSub, setFilterSub] = useState('All');
     const [sortBy, setSortBy] = useState('seeders');
 
-    // --- DOWNLOAD STATE ---
     const [downloadState, setDownloadState] = useState({
         isDownloading: false,
         overallProgress: 0,
@@ -247,7 +240,6 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
             if (isHevc) codecs.add('H.265 (HEVC)');
             else codecs.add('H.264 (AVC)');
 
-            // Збираємо аудіо
             if (t.MediaInfo?.audio) {
                 t.MediaInfo.audio.forEach(a => {
                     if (a.language) audios.add(a.language);
@@ -260,7 +252,6 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                 });
             }
 
-            // Збираємо субтитри
             if (t.MediaInfo?.subtitles) {
                 t.MediaInfo.subtitles.forEach(s => {
                      if (s.language) subs.add(s.language);
@@ -331,7 +322,6 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
     const fetchWithRetry = async (url, options, retries = 5, delay = 1000) => {
         try {
             const headers = options.headers || {};
-            // Додаємо no-referrer, іноді допомагає з CORS на прямих лінках
             const enhancedOptions = { ...options, headers, referrerPolicy: 'no-referrer' };
             const res = await fetch(url, enhancedOptions);
             if (!res.ok) {
@@ -398,21 +388,16 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
     };
 
     const processDownload = async (initialUrl, onProgress, signal) => {
-        // ВИПРАВЛЕНО: Спочатку робимо HEAD запит або перевіряємо розширення/Content-Type,
-        // щоб не завантажувати весь файл у пам'ять для перевірки на m3u8.
-        
         let isM3U8 = initialUrl.includes('.m3u8');
         
         if (!isM3U8) {
             try {
-                 // Спробуємо легкий запит, щоб отримати заголовки
                  const headRes = await fetchWithRetry(initialUrl, { method: 'HEAD', signal });
                  const cType = headRes.headers.get('content-type');
                  if (cType && (cType.includes('mpegurl') || cType.includes('hls'))) {
                      isM3U8 = true;
                  }
             } catch (e) {
-                 // Якщо HEAD недоступний, ігноруємо і йдемо далі (будемо качати як файл)
                  console.warn("HEAD request failed, assuming direct file");
             }
         }
@@ -421,7 +406,6 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
             const res = await fetchWithRetry(initialUrl, { signal });
             const fullText = await res.text();
             
-            // Якщо це m3u8
             if (fullText.includes('#EXTM3U')) {
                 const lines = fullText.split('\n');
                 if (fullText.includes('#EXT-X-STREAM-INF')) {
@@ -434,7 +418,6 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
             }
         }
 
-        // Якщо це не m3u8 або перевірка не пройшла - качаємо як прямий потік
         return downloadDirectStream(initialUrl, onProgress, signal);
     };
 
@@ -445,12 +428,10 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
         const provData = providers[provider];
 
         if (isMovie) {
-            // Movie: providers[provider] is an array of sources
             if (Array.isArray(provData) && provData.length > 0) {
                 foundSource = provData[0];
             }
         } else {
-            // TV: providers[provider] is { "1": { "1": [...], "2": [...] } }
             const sKey = String(sNum);
             const eKey = String(eNum);
             if (provData[sKey] && provData[sKey][eKey] && provData[sKey][eKey].length > 0) {
@@ -798,165 +779,164 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                 </div>
             )}
 
-            {activeTab === 'torrents' && (
-                <div>
-                    <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                        <md-outlined-select label="Трекер" value={filterTracker} onInput={e => setFilterTracker(e.target.value)}>
-                            {filterOptions.trackers.map(t => <md-select-option key={t} value={t}><div slot="headline">{t}</div></md-select-option>)}
-                        </md-outlined-select>
-                        <md-outlined-select label="Якість" value={filterQuality} onInput={e => setFilterQuality(e.target.value)}>
-                            {filterOptions.qualities.map(q => <md-select-option key={q} value={q}><div slot="headline">{q === 'All' ? 'Всі' : q}</div></md-select-option>)}
-                        </md-outlined-select>
-                        <md-outlined-select label="Кодек" value={filterCodec} onInput={e => setFilterCodec(e.target.value)}>
-                            {filterOptions.codecs.map(c => <md-select-option key={c} value={c}><div slot="headline">{c === 'All' ? 'Всі' : c}</div></md-select-option>)}
-                        </md-outlined-select>
-                        <md-outlined-select label="Аудіо" value={filterAudio} onInput={e => setFilterAudio(e.target.value)}>
-                            {filterOptions.audios.map(a => <md-select-option key={a} value={a}><div slot="headline">{a === 'All' ? 'Всі' : a}</div></md-select-option>)}
-                        </md-outlined-select>
-                        <md-outlined-select label="Субтитри" value={filterSub} onInput={e => setFilterSub(e.target.value)}>
-                            {filterOptions.subs.map(s => <md-select-option key={s} value={s}><div slot="headline">{s === 'All' ? 'Всі' : s}</div></md-select-option>)}
-                        </md-outlined-select>
-                        <md-outlined-select label="Сортування" value={sortBy} onInput={e => setSortBy(e.target.value)}>
-                            <md-select-option value="seeders"><div slot="headline">Сідери</div></md-select-option>
-                            <md-select-option value="leechers"><div slot="headline">Лічери</div></md-select-option>
-                            <md-select-option value="size"><div slot="headline">Розмір</div></md-select-option>
-                        </md-outlined-select>
-                    </div>
+    {activeTab === 'torrents' && (
+        <div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                <md-outlined-select label="Трекер" value={filterTracker} onInput={e => setFilterTracker(e.target.value)}>
+                    {filterOptions.trackers.map(t => <md-select-option key={t} value={t}><div slot="headline">{t}</div></md-select-option>)}
+                </md-outlined-select>
+                <md-outlined-select label="Якість" value={filterQuality} onInput={e => setFilterQuality(e.target.value)}>
+                    {filterOptions.qualities.map(q => <md-select-option key={q} value={q}><div slot="headline">{q === 'All' ? 'Всі' : q}</div></md-select-option>)}
+                </md-outlined-select>
+                <md-outlined-select label="Кодек" value={filterCodec} onInput={e => setFilterCodec(e.target.value)}>
+                    {filterOptions.codecs.map(c => <md-select-option key={c} value={c}><div slot="headline">{c === 'All' ? 'Всі' : c}</div></md-select-option>)}
+                </md-outlined-select>
+                <md-outlined-select label="Аудіо" value={filterAudio} onInput={e => setFilterAudio(e.target.value)}>
+                    {filterOptions.audios.map(a => <md-select-option key={a} value={a}><div slot="headline">{a === 'All' ? 'Всі' : a}</div></md-select-option>)}
+                </md-outlined-select>
+                <md-outlined-select label="Субтитри" value={filterSub} onInput={e => setFilterSub(e.target.value)}>
+                    {filterOptions.subs.map(s => <md-select-option key={s} value={s}><div slot="headline">{s === 'All' ? 'Всі' : s}</div></md-select-option>)}
+                </md-outlined-select>
+                <md-outlined-select label="Сортування" value={sortBy} onInput={e => setSortBy(e.target.value)}>
+                    <md-select-option value="seeders"><div slot="headline">Сідери</div></md-select-option>
+                    <md-select-option value="leechers"><div slot="headline">Лічери</div></md-select-option>
+                    <md-select-option value="size"><div slot="headline">Розмір</div></md-select-option>
+                </md-outlined-select>
+            </div>
 
-                    {loadingTorrents && <md-linear-progress indeterminate></md-linear-progress>}
+            {loadingTorrents && <md-linear-progress indeterminate></md-linear-progress>}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {torrents.length === 0 && !loadingTorrents && (
-                            <div style={{color: 'var(--md-sys-color-outline)', textAlign: 'center'}}>Торрентів не знайдено</div>
-                        )}
-                        {filteredTorrents.map((t, i) => {
-                            // --- DEDUPLICATION LOGIC ---
-                            const uniqueAudio = new Set();
-                            const uniqueSubs = new Set();
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {torrents.length === 0 && !loadingTorrents && (
+                    <div style={{color: 'var(--md-sys-color-outline)', textAlign: 'center'}}>Торрентів не знайдено</div>
+                )}
+                {filteredTorrents.map((t, i) => {
+                    const uniqueAudio = new Set();
+                    const uniqueSubs = new Set();
 
-                            const processAudioList = (list) => {
-                                if (!list) return [];
-                                return list.reduce((acc, audio) => {
-                                    const rawTitle = typeof audio === 'string' ? audio : (audio.title || '');
-                                    const rawLang = typeof audio === 'string' ? '' : (audio.language || '');
-                                    const cleanTitle = cleanTrackTitle(rawTitle);
-                                    const langCode = formatLang(rawLang || (rawTitle.includes('ukr') ? 'ukr' : 'eng'));
-                                    const label = cleanTitle ? `${langCode} - ${cleanTitle}` : langCode;
+                    const processAudioList = (list) => {
+                        if (!list) return [];
+                        return list.reduce((acc, audio) => {
+                            const rawTitle = typeof audio === 'string' ? audio : (audio.title || '');
+                            const rawLang = typeof audio === 'string' ? '' : (audio.language || '');
+                            const cleanTitle = cleanTrackTitle(rawTitle);
+                            const langCode = formatLang(rawLang || (rawTitle.includes('ukr') ? 'ukr' : 'eng'));
+                            const label = cleanTitle ? `${langCode} - ${cleanTitle}` : langCode;
 
-                                    if (!uniqueAudio.has(label)) {
-                                        uniqueAudio.add(label);
-                                        acc.push(label);
-                                    }
-                                    return acc;
-                                }, []);
-                            };
+                            if (!uniqueAudio.has(label)) {
+                                uniqueAudio.add(label);
+                                acc.push(label);
+                            }
+                            return acc;
+                        }, []);
+                    };
 
-                            const processSubList = (list) => {
-                                if (!list) return [];
-                                return list.reduce((acc, sub) => {
-                                    const rawTitle = typeof sub === 'string' ? sub : (sub.title || '');
-                                    const rawLang = typeof sub === 'string' ? '' : (sub.language || '');
-                                    const cleanTitle = cleanTrackTitle(rawTitle);
-                                    const langCode = formatLang(rawLang || (rawTitle.includes('ukr') ? 'ukr' : 'eng'));
-                                    const label = cleanTitle ? `${langCode} - ${cleanTitle}` : langCode;
+                    const processSubList = (list) => {
+                        if (!list) return [];
+                        return list.reduce((acc, sub) => {
+                            const rawTitle = typeof sub === 'string' ? sub : (sub.title || '');
+                            const rawLang = typeof sub === 'string' ? '' : (sub.language || '');
+                            const cleanTitle = cleanTrackTitle(rawTitle);
+                            const langCode = formatLang(rawLang || (rawTitle.includes('ukr') ? 'ukr' : 'eng'));
+                            const label = cleanTitle ? `${langCode} - ${cleanTitle}` : langCode;
 
-                                    if (!uniqueSubs.has(label)) {
-                                        uniqueSubs.add(label);
-                                        acc.push(label);
-                                    }
-                                    return acc;
-                                }, []);
-                            };
+                            if (!uniqueSubs.has(label)) {
+                                uniqueSubs.add(label);
+                                acc.push(label);
+                            }
+                            return acc;
+                        }, []);
+                    };
 
-                            const audioChips = t.MediaInfo?.audio ? processAudioList(t.MediaInfo.audio) : processAudioList(t.jacredInfo?.audioList);
-                            const subChips = t.MediaInfo?.subtitles ? processSubList(t.MediaInfo.subtitles) : processSubList(t.jacredInfo?.subList);
+                    const audioChips = t.MediaInfo?.audio ? processAudioList(t.MediaInfo.audio) : processAudioList(t.jacredInfo?.audioList);
+                    const subChips = t.MediaInfo?.subtitles ? processSubList(t.MediaInfo.subtitles) : processSubList(t.jacredInfo?.subList);
 
-                            return (
-                                <div key={i} style={{ 
-                                    background: 'var(--md-sys-color-surface-container-high)', 
-                                    padding: '16px', borderRadius: '12px',
-                                    display: 'flex', flexDirection: 'column', gap: '12px'
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '16px' }}>
-                                        <span style={{ fontWeight: 500, fontSize: '15px', color: 'var(--md-sys-color-on-surface)', lineHeight: '1.4' }}>{t.Title}</span>
-                                        
-                                        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                                            {t.MagnetUri && (
-                                                <md-filled-tonal-button onClick={() => window.location.href = t.MagnetUri} style={{ cursor: 'pointer' }}>
-                                                    <md-icon slot="icon">link</md-icon>
-                                                    Magnet
-                                                </md-filled-tonal-button>
-                                            )}
-                                            {t.Link && (
-                                                <md-outlined-button onClick={() => window.open(t.Link, '_blank')} style={{ cursor: 'pointer' }}>
-                                                    <md-icon slot="icon">download</md-icon>
-                                                    .torrent
-                                                </md-outlined-button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="chips-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                                        <md-assist-chip label={t.Tracker} />
-                                        <md-assist-chip label={formatBytes(t.Size)}>
-                                            <md-icon slot="icon">save</md-icon>
-                                        </md-assist-chip>
-                                        {getVideoBadges(t).map((badge, idx) => (
-                                            <md-outlined-icon-button 
-                                                key={`v-${idx}`} 
-                                                style={{ 
-                                                    '--md-outlined-icon-button-container-width': '32px',
-                                                    '--md-outlined-icon-button-container-height': '32px',
-                                                    '--md-icon-button-icon-size': '20px',
-                                                    '--md-outlined-icon-button-container-shape': '8px',
-                                                    '--md-outlined-icon-button-outline-color': 'var(--md-sys-color-primary)',
-                                                    '--md-outlined-icon-button-icon-color': 'var(--md-sys-color-primary)',
-                                                    margin: '0 2px',
-                                                    pointerEvents: 'none'
-                                                }}
-                                            >
-                                                <md-icon>{badge.icon}</md-icon>
-                                            </md-outlined-icon-button>
-                                        ))}
-                                        
-                                        {audioChips.map((label, idx) => (
-                                            <md-assist-chip key={`audio-${idx}`} label={label}>
-                                                <md-icon slot="icon">headphones</md-icon>
-                                            </md-assist-chip>
-                                        ))}
-
-                                        {audioChips.length === 0 && t.ffprobe && t.ffprobe.some(s => s.codec_type === 'audio') && (
-                                            <md-assist-chip label={`${t.ffprobe.filter(s => s.codec_type === 'audio').length} Audio`}>
-                                                <md-icon slot="icon">headphones</md-icon>
-                                            </md-assist-chip>
-                                        )}
-
-                                        {subChips.map((label, idx) => (
-                                            <md-assist-chip key={`sub-${idx}`} label={label}>
-                                                <md-icon slot="icon">subtitles</md-icon>
-                                            </md-assist-chip>
-                                        ))}
-                                        
-                                        {subChips.length === 0 && (t.Title.toLowerCase().includes('sub') || (t.ffprobe && t.ffprobe.some(s => s.codec_type === 'subtitle'))) && (
-                                            <md-assist-chip label="Субтитри">
-                                                <md-icon slot="icon">subtitles</md-icon>
-                                            </md-assist-chip>
-                                        )}
-
-                                        <div style={{ display: 'flex', gap: '8px', fontSize: '12px', marginLeft: 'auto', alignItems: 'center' }}>
-                                            <span style={{ color: '#4caf50', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                <md-icon style={{ fontSize: '16px' }}>arrow_upward</md-icon> {t.Seeders}
-                                            </span>
-                                            <span style={{ color: '#f44336', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                <md-icon style={{ fontSize: '16px' }}>arrow_downward</md-icon> {t.Peers}
-                                            </span>
-                                        </div>
-                                    </div>
+                    return (
+                        <div key={i} style={{ 
+                            background: 'var(--md-sys-color-surface-container-high)', 
+                            padding: '16px', borderRadius: '12px',
+                            display: 'flex', flexDirection: 'column', gap: '12px'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '16px' }}>
+                                <span style={{ fontWeight: 500, fontSize: '15px', color: 'var(--md-sys-color-on-surface)', lineHeight: '1.4' }}>{t.Title}</span>
+                                
+                                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                                    {t.MagnetUri && (
+                                        <md-filled-tonal-button onClick={() => window.location.href = t.MagnetUri} style={{ cursor: 'pointer' }}>
+                                            <md-icon slot="icon">link</md-icon>
+                                            Magnet
+                                        </md-filled-tonal-button>
+                                    )}
+                                    {t.Link && (
+                                        <md-outlined-button onClick={() => window.open(t.Link, '_blank')} style={{ cursor: 'pointer' }}>
+                                            <md-icon slot="icon">download</md-icon>
+                                            .torrent
+                                        </md-outlined-button>
+                                    )}
                                 </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
+                            </div>
+                            <div className="chips-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                                <md-assist-chip label={t.Tracker} />
+                                <md-assist-chip label={formatBytes(t.Size)}>
+                                    <md-icon slot="icon">save</md-icon>
+                                </md-assist-chip>
+                                {getVideoBadges(t).map((badge, idx) => (
+                                    <md-outlined-icon-button 
+                                        key={`v-${idx}`} 
+                                        style={{ 
+                                            '--md-outlined-icon-button-container-width': '32px',
+                                            '--md-outlined-icon-button-container-height': '32px',
+                                            '--md-icon-button-icon-size': '20px',
+                                            '--md-outlined-icon-button-container-shape': '8px',
+                                            '--md-outlined-icon-button-outline-color': 'var(--md-sys-color-primary)',
+                                            '--md-outlined-icon-button-icon-color': 'var(--md-sys-color-primary)',
+                                            margin: '0 2px',
+                                            pointerEvents: 'none'
+                                        }}
+                                    >
+                                        <md-icon>{badge.icon}</md-icon>
+                                    </md-outlined-icon-button>
+                                ))}
+                                
+                                {audioChips.map((label, idx) => (
+                                    <md-assist-chip key={`audio-${idx}`} label={label}>
+                                        <md-icon slot="icon">headphones</md-icon>
+                                    </md-assist-chip>
+                                ))}
+
+                                {audioChips.length === 0 && t.ffprobe && t.ffprobe.some(s => s.codec_type === 'audio') && (
+                                    <md-assist-chip label={`${t.ffprobe.filter(s => s.codec_type === 'audio').length} Audio`}>
+                                        <md-icon slot="icon">headphones</md-icon>
+                                    </md-assist-chip>
+                                )}
+
+                                {subChips.map((label, idx) => (
+                                    <md-assist-chip key={`sub-${idx}`} label={label}>
+                                        <md-icon slot="icon">subtitles</md-icon>
+                                    </md-assist-chip>
+                                ))}
+                                
+                                {subChips.length === 0 && (t.Title.toLowerCase().includes('sub') || (t.ffprobe && t.ffprobe.some(s => s.codec_type === 'subtitle'))) && (
+                                    <md-assist-chip label="Субтитри">
+                                        <md-icon slot="icon">subtitles</md-icon>
+                                    </md-assist-chip>
+                                )}
+
+                                <div style={{ display: 'flex', gap: '8px', fontSize: '12px', marginLeft: 'auto', alignItems: 'center' }}>
+                                    <span style={{ color: '#4caf50', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                        <md-icon style={{ fontSize: '16px' }}>arrow_upward</md-icon> {t.Seeders}
+                                    </span>
+                                    <span style={{ color: '#f44336', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                        <md-icon style={{ fontSize: '16px' }}>arrow_downward</md-icon> {t.Peers}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    )}
         </div>
     );
 };

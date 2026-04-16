@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 
-// Імпортуємо визначення компонента MD3 кнопки
-// Переконайтеся, що @material/web встановлено у вашому проекті
 import '@material/web/button/outlined-button.js';
 
 const BAD_WORDS = ['блять', 'сука', 'нахуй', 'пізда', 'хуй', 'йобаний', 'бля', 'пизда', 'єбать', 'ебать'];
@@ -156,7 +154,6 @@ const Comments = ({ title, imdbId }) => {
 
             {!loading && hasMore && comments.length > 0 && (
                 <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
-                    {/* Використання MD3 Outlined Button замість стандартної кнопки */}
                     <md-outlined-button 
                         onClick={handleLoadMore}
                         style={{ width: '100%' }}

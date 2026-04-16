@@ -41,20 +41,13 @@ instance.interceptors.request.use(async config => {
   
   const isProtected = PROTECTED_PATHS.some(path => config.url.includes(path));
 
-  if (isProtected) {
-      if (!window.cfToken) {
-         const token = await waitForToken();
-         if (token) {
-            config.headers['cf-turnstile-response'] = token;
-         }
-      } else {
-         config.headers['cf-turnstile-response'] = window.cfToken;
-      }
-  } else {
-      // Для незахищених (як /details) додаємо токен "якщо є", але НЕ чекаємо
-      if (window.cfToken) {
-          config.headers['cf-turnstile-response'] = window.cfToken;
-      }
+  if (isProtected && !window.cfToken) {
+    const token = await waitForToken();
+    if (token) {
+      config.headers['cf-turnstile-response'] = token;
+    }
+  } else if (window.cfToken) {
+    config.headers['cf-turnstile-response'] = window.cfToken;
   }
   
   return config;

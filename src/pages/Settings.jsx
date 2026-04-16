@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import '@material/web/switch/switch.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/icon/icon.js';
-// Додаємо імпорти для Select
 import '@material/web/select/outlined-select.js';
 import '@material/web/select/select-option.js';
 
@@ -10,7 +9,7 @@ const Settings = () => {
   const [filterProfanity, setFilterProfanity] = useState(false);
   const [showAdult, setShowAdult] = useState(false);
   const [engSource, setEngSource] = useState(false);
-  const [engMode, setEngMode] = useState('mixed'); // 'mixed', 'only_eng'
+  const [engMode, setEngMode] = useState('mixed');
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
@@ -39,7 +38,6 @@ const Settings = () => {
   };
 
   const handleThemeChange = (e) => {
-      // md-outlined-select передає значення так само через e.target.value
       const newTheme = e.target.value;
       setTheme(newTheme);
       localStorage.setItem('uafilms_theme', newTheme);
@@ -60,10 +58,8 @@ const Settings = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
-        {/* ГРУПА НАЛАШТУВАНЬ */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}> 
             
-            {/* 1. Тема оформлення з MD Select */}
             <div style={{ 
                 ...itemStyle, 
                 borderTopLeftRadius: '16px', 
@@ -100,7 +96,6 @@ const Settings = () => {
                 </md-outlined-select>
             </div>
 
-            {/* 2. Фільтр матюків */}
             <div style={{ ...itemStyle, borderRadius: '4px' }}>
                 <div>
                     <h3 style={{ margin: 0, fontSize: '18px' }}>Фільтрувати нецензурну лексику</h3>
@@ -114,7 +109,6 @@ const Settings = () => {
                 ></md-switch>
             </div>
 
-            {/* 3. Дорослий контент */}
             <div style={{ ...itemStyle, borderRadius: '4px' }}>
                 <div>
                     <h3 style={{ margin: 0, fontSize: '18px' }}>Показувати контент 18+</h3>
@@ -128,7 +122,6 @@ const Settings = () => {
                 ></md-switch>
             </div>
 
-            {/* 4. Англомовні джерела */}
             <div style={{ ...itemStyle, borderRadius: engSource ? '4px' : '4px 4px 16px 16px' }}>
                 <div>
                     <h3 style={{ margin: 0, fontSize: '18px' }}>Англомовні джерела</h3>
@@ -142,7 +135,6 @@ const Settings = () => {
                 ></md-switch>
             </div>
 
-            {/* 5. Режим англійських джерел (тільки якщо увімкнено) */}
             {engSource && (
                 <div style={{ 
                     ...itemStyle, 
@@ -183,7 +175,6 @@ const Settings = () => {
             )}
         </div>
 
-        {/* Спільнота та Підтримка */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--md-sys-color-primary-container)', color: 'var(--md-sys-color-on-primary-container)', padding: '24px', borderRadius: '24px' }}>
                 <div>
@@ -216,7 +207,6 @@ const Settings = () => {
                 </md-filled-button>
             </div>
 
-            {/* НОВИЙ БЛОК API - додано в тому ж стилі сітки */}
             <div style={{ 
                 display: 'flex', 
                 flexDirection: 'column', 
@@ -225,7 +215,7 @@ const Settings = () => {
                 color: 'var(--md-sys-color-on-secondary-container)', 
                 padding: '24px', 
                 borderRadius: '24px',
-                gridColumn: '1 / -1' // Розтягуємо на всю ширину сітки, якщо хочете окремим рядком
+                gridColumn: '1 / -1'
             }}>
                 <div>
                     <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>

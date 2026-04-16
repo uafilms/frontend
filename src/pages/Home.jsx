@@ -67,7 +67,6 @@ const Home = () => {
     const settings = JSON.parse(localStorage.getItem('uafilms_settings') || '{}');
     const adult = settings.showAdult || false;
 
-    // Завантаження історії пошуку
     const savedHistory = JSON.parse(localStorage.getItem('uafilms_search_history') || '[]');
     setHistory(savedHistory);
 
@@ -90,14 +89,12 @@ const Home = () => {
 
   return (
     <div>
-      {/* ВИПРАВЛЕНО: Додано marginBottom для відступу від трендів */}
       <div style={{ padding: '24px', marginBottom: '5px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
             <h1 style={{ fontSize: '28px', color: 'var(--md-sys-color-primary)', margin: 0 }}>UAFilms</h1>
             <BetaBadge />
         </div>
 
-        {/* Пошук на головній */}
         <md-outlined-text-field
             label="Що будемо дивитись?"
             value={searchQuery}
@@ -108,13 +105,11 @@ const Home = () => {
             <md-icon slot="leading-icon">search</md-icon>
         </md-outlined-text-field>
 
-        {/* Історія пошуку */}
         {history.length > 0 && (
             <div style={{ marginTop: '12px' }}>
                 <div style={{ fontSize: '14px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '8px', marginLeft: '4px' }}>
                     Історія пошуку:
                 </div>
-                {/* ВИПРАВЛЕНО: flex-wrap: nowrap для одного рядка */}
                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '1px', flexWrap: 'nowrap' }}>
                     {history.map((item, index) => (
                         <md-suggestion-chip 
