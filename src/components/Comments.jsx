@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
+import { findAndFilter } from 'swearify';
 
 import '@material/web/button/outlined-button.js';
 
-const BAD_WORDS = ['блять', 'сука', 'нахуй', 'пізда', 'хуй', 'йобаний', 'бля', 'пизда', 'єбать', 'ебать'];
-
 const filterText = (text, enabled) => {
     if (!enabled || !text) return text;
-    let newText = text;
-    BAD_WORDS.forEach(word => {
-        const regex = new RegExp(word, 'gi');
-        newText = newText.replace(regex, '***');
-    });
-    return newText;
+    const result = findAndFilter(text, '*', ['uk', 'ru', 'en']);
+    return result.filtered_sentense;
 };
 
 const CommentItem = ({ comment, filterProfanity }) => {

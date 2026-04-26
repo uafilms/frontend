@@ -20,6 +20,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.1",
     "react-top-loading-bar": "^2.3.1",
+    "swearify": "^1.0.2",
     "swiper": "^11.0.6"
   },
   "devDependencies": {
