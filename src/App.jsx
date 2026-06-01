@@ -13,8 +13,8 @@ const Favorites = React.lazy(() => import('./pages/Favorites'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 
 const PageLoader = () => (
-  <div style={{ padding: '20px', textAlign: 'center', color: 'var(--md-sys-color-on-surface)' }}>
-    Завантаження сторінки...
+  <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <md-circular-progress indeterminate></md-circular-progress>
   </div>
 );
 

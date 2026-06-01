@@ -85,7 +85,7 @@ const Home = () => {
       navigate(`/search?q=${query}`);
   };
 
-  if (!data) return <div style={{ padding: '24px' }}>Завантаження...</div>;
+  if (!data) return <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><md-circular-progress indeterminate></md-circular-progress></div>;
 
   return (
     <div>

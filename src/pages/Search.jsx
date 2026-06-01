@@ -114,16 +114,21 @@ const Search = () => {
         ))}
       </div>
 
-      {results.length > 0 && page < totalPages && (
+      {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px', paddingBottom: '32px' }}>
-            <md-filled-tonal-button 
-                onClick={loadMore} 
-                disabled={loading ? true : undefined} 
-                style={{ cursor: loading ? 'default' : 'pointer' }}
-            >
-                {loading ? 'Завантаження...' : 'Завантажити ще'}
-            </md-filled-tonal-button>
+            <md-circular-progress indeterminate></md-circular-progress>
         </div>
+      ) : (
+        results.length > 0 && page < totalPages && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px', paddingBottom: '32px' }}>
+              <md-filled-tonal-button 
+                  onClick={loadMore}
+                  style={{ cursor: 'pointer' }}
+              >
+                  Завантажити ще
+              </md-filled-tonal-button>
+          </div>
+        )
       )}
     </div>
   );

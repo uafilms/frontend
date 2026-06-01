@@ -145,7 +145,7 @@ const Comments = ({ title, imdbId }) => {
                 {comments.map((c, i) => <CommentItem key={i} comment={c} filterProfanity={filterProfanity} />)}
             </ul>
             
-            {loading && <div style={{ textAlign: 'center', padding: '20px', color: 'var(--md-sys-color-outline)' }}>Завантаження...</div>}
+            {loading && <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}><md-circular-progress indeterminate></md-circular-progress></div>}
 
             {!loading && hasMore && comments.length > 0 && (
                 <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
