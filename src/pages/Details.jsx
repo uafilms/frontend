@@ -24,7 +24,18 @@ const formatProviderName = (provider) => {
 };
 
 const mergeData = (prev, incoming) => {
-    if (!prev) return incoming;
+    if (!prev) {
+        if (incoming.provider) {
+            const wrapper = { providers: {} };
+            if (incoming.sources) {
+                wrapper.providers[incoming.provider] = incoming.sources;
+            } else if (incoming.seasons) {
+                wrapper.providers[incoming.provider] = incoming.seasons;
+            }
+            return wrapper;
+        }
+        return incoming;
+    }
     const next = { ...prev };
     
     // Merge provider data from SSE chunks
