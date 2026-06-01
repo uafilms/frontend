@@ -108,8 +108,8 @@ const Details = () => {
         return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
     });
     setAvailableSources(sourcesList);
-    if (sourcesList.length > 0 && !selectedSource) {
-        setSelectedSource(sourcesList[0]);
+    if (sourcesList.length > 0) {
+        setSelectedSource(prev => prev || sourcesList[0]);
     }
   };
 
