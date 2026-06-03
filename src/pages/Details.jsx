@@ -4,12 +4,10 @@ import api from '../api/axios';
 import Comments from '../components/Comments';
 import Downloader from '../components/Downloader';
 
-import '@material/web/iconbutton/filled-tonal-icon-button.js';
-import '@material/web/icon/icon.js';
-import '@material/web/chips/chip-set.js';
-import '@material/web/chips/filter-chip.js';
-import '@material/web/chips/assist-chip.js';
-import '@material/web/progress/circular-progress.js';
+import 'mdui/components/button-icon.js';
+import 'mdui/components/icon.js';
+import 'mdui/components/chip.js';
+import 'mdui/components/circular-progress.js';
 
 const formatProviderName = (provider) => {
     const map = {
@@ -167,9 +165,10 @@ const Details = () => {
             if (settings.engSource) engParam = settings.engMode === 'only_eng' ? 2 : 1;
 
             let url = `${api.defaults.baseURL}/get?id=${id}&type=${type}&sse=1&eng=${engParam}`;
-            if (token) url += `&token=${encodeURIComponent(token)}`;
 
-            const response = await fetch(url);
+            const headers = {};
+            if (token) headers['cf-turnstile-response'] = token;
+            const response = await fetch(url, { headers });
             
             if (!response.ok) {
                  console.warn("Sources fetch status:", response.status);
@@ -258,19 +257,19 @@ const Details = () => {
   };
 
   if (loadingMeta) return (
-      <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <md-circular-progress indeterminate></md-circular-progress>
+      <div style={{ minHeight: '100vh', background: 'rgb(var(--mdui-color-surface))', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <mdui-circular-progress indeterminate></mdui-circular-progress>
       </div>
   );
 
   if (error && !data) {
       return (
-        <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'var(--md-sys-color-error)' }}>
-            <md-icon style={{ fontSize: '48px', marginBottom: '16px' }}>error</md-icon>
+        <div style={{ minHeight: '100vh', background: 'rgb(var(--mdui-color-surface))', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'rgb(var(--mdui-color-error))' }}>
+            <mdui-icon style={{ fontSize: '48px', marginBottom: '16px' }} name="error"></mdui-icon>
             <p>{error}</p>
-            <md-filled-tonal-icon-button onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>
-                <md-icon>arrow_back</md-icon>
-            </md-filled-tonal-icon-button>
+            <mdui-button-icon variant="tonal" onClick={() => navigate(-1)} style={{ marginTop: '16px' }}>
+                <mdui-icon name="arrow_back"></mdui-icon>
+            </mdui-button-icon>
         </div>
       );
   }
@@ -281,30 +280,30 @@ const Details = () => {
   if (settings.engSource) engParam = settings.engMode === 'only_eng' ? 2 : 1;
 
   let embedUrl = `${api.defaults.baseURL.replace('/api', '')}/embed?id=${id}&type=${type}`;
-  if (window.cfToken) embedUrl += `&token=${encodeURIComponent(window.cfToken)}`;
+  if (window.cfToken && window.cfToken !== 'disabled') embedUrl += `&token=${encodeURIComponent(window.cfToken)}`;
   if (selectedSource) embedUrl += `&source=${selectedSource}`;
   if (engParam > 0) embedUrl += `&eng=${engParam}`;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)', color: 'var(--md-sys-color-on-background)' }}>
+    <div style={{ minHeight: '100vh', background: 'rgb(var(--mdui-color-surface))', color: 'rgb(var(--mdui-color-on-surface))' }}>
       
       <div style={{ position: 'relative', height: '350px', width: '100%' }}>
         <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
-            <md-filled-tonal-icon-button onClick={() => navigate(-1)} style={{ cursor: 'pointer' }}>
-                <md-icon>arrow_back</md-icon>
-            </md-filled-tonal-icon-button>
+            <mdui-button-icon variant="tonal" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }}>
+                <mdui-icon name="arrow_back"></mdui-icon>
+            </mdui-button-icon>
         </div>
 
         <div style={{ position: 'absolute', bottom: -28, right: 32, zIndex: 10 }}>
-             <md-filled-tonal-icon-button 
-                toggle 
+             <mdui-button-icon 
+                variant="tonal"
                 selected={isFav ? true : undefined} 
                 onClick={toggleFavorite}
-                style={{ width: '56px', height: '56px', '--md-filled-tonal-icon-button-icon-size': '28px', cursor: 'pointer' }}
+                style={{ width: '56px', height: '56px', cursor: 'pointer' }}
              >
-                <md-icon>favorite_border</md-icon>
-                <md-icon slot="selected">favorite</md-icon>
-            </md-filled-tonal-icon-button>
+                <mdui-icon name="favorite_border"></mdui-icon>
+                <mdui-icon slot="selected" name="favorite"></mdui-icon>
+            </mdui-button-icon>
         </div>
 
         <img 
@@ -314,7 +313,7 @@ const Details = () => {
         />
         <div style={{ 
             position: 'absolute', bottom: 0, width: '100%', 
-            background: 'linear-gradient(to top, var(--md-sys-color-background), transparent)',
+            background: 'linear-gradient(to top, rgb(var(--mdui-color-surface)), transparent)',
             height: '200px'
         }} />
       </div>
@@ -322,48 +321,49 @@ const Details = () => {
       <div style={{ padding: '0 24px 40px 24px', maxWidth: '1200px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '32px', margin: '16px 0 8px 0', fontFamily: 'Roboto' }}>{data.title}</h1>
         
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', color: 'var(--md-sys-color-outline)', marginBottom: '24px' }}>
-            <md-assist-chip label={data.year?.toString() || '-'}></md-assist-chip>
-            <md-assist-chip label={type === 'movie' ? 'Фільм' : 'Серіал'}></md-assist-chip>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', color: 'rgb(var(--mdui-color-outline))', marginBottom: '24px' }}>
+            <mdui-chip variant="assist">{data.year?.toString() || '-'}</mdui-chip>
+            <mdui-chip variant="assist">{type === 'movie' ? 'Фільм' : 'Серіал'}</mdui-chip>
             
             {data.imdbRating && (
-                <md-assist-chip label={data.imdbRating.toString()}>
-                    <md-icon slot="icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</md-icon>
-                </md-assist-chip>
+                <mdui-chip variant="assist">
+                    <mdui-icon slot="icon" style={{ fontVariationSettings: "'FILL' 1" }} name="star"></mdui-icon>
+                    {data.imdbRating.toString()}
+                </mdui-chip>
             )}
             
             {data.genres && data.genres.length > 0 && (
-                <md-assist-chip label={data.genres.join(', ')}></md-assist-chip>
+                <mdui-chip variant="assist">{data.genres.join(', ')}</mdui-chip>
             )}
         </div>
 
         <div style={{ marginBottom: '32px' }}>
-            <h3 style={{ fontSize: '18px', color: 'var(--md-sys-color-primary)', marginBottom: '8px' }}>Про фільм</h3>
-            <p style={{ lineHeight: '1.6', fontSize: '16px', color: 'var(--md-sys-color-on-surface-variant)', maxWidth: '800px' }}>
+            <h3 style={{ fontSize: '18px', color: 'rgb(var(--mdui-color-primary))', marginBottom: '8px' }}>Про фільм</h3>
+            <p style={{ lineHeight: '1.6', fontSize: '16px', color: 'rgb(var(--mdui-color-on-surface-variant))', maxWidth: '800px' }}>
                 {data.overview || "Опис відсутній."}
             </p>
         </div>
 
-        <h3 style={{ fontSize: '18px', color: 'var(--md-sys-color-on-surface)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <h3 style={{ fontSize: '18px', color: 'rgb(var(--mdui-color-on-surface))', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             Джерела
-            {loadingSources && <md-circular-progress indeterminate style={{ '--md-circular-progress-size': '20px' }}></md-circular-progress>}
+            {loadingSources && <mdui-circular-progress indeterminate style={{ width: '18px', height: '18px' }}></mdui-circular-progress>}
         </h3>
         
         {availableSources.length > 0 ? (
-            <md-chip-set style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
                 {availableSources.map(s => (
-                    <md-filter-chip 
+                    <mdui-chip 
                         key={s} 
-                        label={formatProviderName(s)}
+                        variant="filter"
                         selected={selectedSource === s ? true : undefined} 
                         onClick={() => setSelectedSource(s)}
                         style={{ cursor: 'pointer' }}
-                    />
+                    >{formatProviderName(s)}</mdui-chip>
                 ))}
-            </md-chip-set>
+            </div>
         ) : (
             !loadingSources && (
-                <div style={{ marginBottom: '16px', color: 'var(--md-sys-color-error)' }}>
+                <div style={{ marginBottom: '16px', color: 'rgb(var(--mdui-color-error))' }}>
                     Джерела не знайдені (або помилка завантаження)
                 </div>
             )
@@ -388,7 +388,7 @@ const Details = () => {
                     allow="autoplay; encrypted-media; fullscreen"
                 />
             ) : (
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', color: 'var(--md-sys-color-on-surface-variant)'}}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', color: 'rgb(var(--mdui-color-on-surface-variant))'}}>
                     {loadingSources ? 'Пошук джерел...' : 'Відео джерела не доступні'}
                 </div>
             )}

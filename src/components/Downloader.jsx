@@ -5,19 +5,15 @@ import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import { parseTorrentTitle } from '../utils/parser';
 
-import '@material/web/icon/icon.js';
-import '@material/web/checkbox/checkbox.js';
-import '@material/web/button/filled-tonal-button.js';
-import '@material/web/button/filled-button.js';
-import '@material/web/button/outlined-button.js';
-import '@material/web/button/text-button.js';
-import '@material/web/iconbutton/outlined-icon-button.js';
-import '@material/web/chips/filter-chip.js';
-import '@material/web/chips/assist-chip.js';
-import '@material/web/progress/linear-progress.js';
-import '@material/web/progress/circular-progress.js';
-import '@material/web/select/outlined-select.js';
-import '@material/web/select/select-option.js';
+import 'mdui/components/icon.js';
+import 'mdui/components/checkbox.js';
+import 'mdui/components/button.js';
+import 'mdui/components/button-icon.js';
+import 'mdui/components/chip.js';
+import 'mdui/components/linear-progress.js';
+import 'mdui/components/circular-progress.js';
+import 'mdui/components/select.js';
+import 'mdui/components/menu-item.js';
 
 const sanitizeFilename = (filename) => {
     return filename.replace(/[:/\\?%*|"<>]/g, '_');
@@ -161,6 +157,7 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
     const [selectedEpisodes, setSelectedEpisodes] = useState({});
     
     const abortController = useRef(null);
+    const filterContainerRef = useRef(null);
 
     useEffect(() => {
         if (window.cfToken) {
@@ -179,6 +176,27 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                 clearInterval(timer);
             };
         }
+    }, []);
+
+    useEffect(() => {
+        const container = filterContainerRef.current;
+        if (!container) return;
+        const handler = (e) => {
+            const select = e.target.closest('mdui-select');
+            if (!select) return;
+            const value = select.value;
+            const label = select.getAttribute('label');
+            switch (label) {
+                case 'Трекер': setFilterTracker(value); break;
+                case 'Якість': setFilterQuality(value); break;
+                case 'Кодек': setFilterCodec(value); break;
+                case 'Аудіо': setFilterAudio(value); break;
+                case 'Субтитри': setFilterSub(value); break;
+                case 'Сортування': setSortBy(value); break;
+            }
+        };
+        container.addEventListener('change', handler);
+        return () => container.removeEventListener('change', handler);
     }, []);
 
     const availableProviders = useMemo(() => {
@@ -322,6 +340,9 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
     const fetchWithRetry = async (url, options, retries = 5, delay = 1000) => {
         try {
             const headers = options.headers || {};
+            if (window.cfToken && window.cfToken !== 'disabled') {
+                headers['cf-turnstile-response'] = window.cfToken;
+            }
             const enhancedOptions = { ...options, headers, referrerPolicy: 'no-referrer' };
             const res = await fetch(url, enhancedOptions);
             if (!res.ok) {
@@ -442,12 +463,6 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
         if (!foundSource || !foundSource.url) return null;
         
         let url = foundSource.url;
-        if (url.includes('/api/uaflix') || url.includes('/api/moonanime') || url.includes('/proxy/')) {
-            if (cfToken && !url.includes('token=')) {
-                const sep = url.includes('?') ? '&' : '?';
-                url += `${sep}token=${encodeURIComponent(cfToken)}`;
-            }
-        }
         return url;
     };
 
@@ -591,8 +606,8 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
     );
 
     return (
-        <div style={{ marginTop: '24px', background: 'var(--md-sys-color-surface-container-low)', padding: '24px', borderRadius: '16px' }}>
-            <h3 style={{ fontSize: '20px', margin: '0 0 16px 0', color: 'var(--md-sys-color-on-surface)', display: 'flex', alignItems: 'center' }}>
+        <div style={{ marginTop: '24px', background: 'rgb(var(--mdui-color-surface-container-low))', padding: '24px', borderRadius: '16px' }}>
+            <h3 style={{ fontSize: '20px', margin: '0 0 16px 0', color: 'rgb(var(--mdui-color-on-surface))', display: 'flex', alignItems: 'center' }}>
                 Завантаження <BetaIcon />
             </h3>
             
@@ -601,8 +616,8 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                     onClick={() => setActiveTab('providers')}
                     style={{ 
                         padding: '8px 16px', borderRadius: '8px', cursor: 'pointer',
-                        background: activeTab === 'providers' ? 'var(--md-sys-color-secondary-container)' : 'transparent',
-                        color: activeTab === 'providers' ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface)'
+                        background: activeTab === 'providers' ? 'rgb(var(--mdui-color-secondary-container))' : 'transparent',
+                        color: activeTab === 'providers' ? 'rgb(var(--mdui-color-on-secondary-container))' : 'rgb(var(--mdui-color-on-surface))'
                     }}
                 >
                     Провайдери (Web)
@@ -611,8 +626,8 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                     onClick={() => { setActiveTab('torrents'); fetchTorrents(); }}
                     style={{ 
                         padding: '8px 16px', borderRadius: '8px', cursor: 'pointer',
-                        background: activeTab === 'torrents' ? 'var(--md-sys-color-secondary-container)' : 'transparent',
-                        color: activeTab === 'torrents' ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface)'
+                        background: activeTab === 'torrents' ? 'rgb(var(--mdui-color-secondary-container))' : 'transparent',
+                        color: activeTab === 'torrents' ? 'rgb(var(--mdui-color-on-secondary-container))' : 'rgb(var(--mdui-color-on-surface))'
                     }}
                 >
                     Торренти
@@ -623,18 +638,18 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
             {activeTab === 'providers' && (
                 <div>
                     {downloadState.isDownloading ? (
-                        <div style={{ marginBottom: '16px', padding: '16px', background: 'var(--md-sys-color-surface)', borderRadius: '12px', border: '1px solid var(--md-sys-color-outline)' }}>
+                        <div style={{ marginBottom: '16px', padding: '16px', background: 'rgb(var(--mdui-color-surface))', borderRadius: '12px', border: '1px solid rgb(var(--mdui-color-outline))' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                     <span style={{ fontWeight: '500' }}>{downloadState.status}</span>
-                                    <span style={{ fontSize: '12px', color: 'var(--md-sys-color-outline)' }}>{downloadState.speed} | {downloadState.eta}</span>
+                                    <span style={{ fontSize: '12px', color: 'rgb(var(--mdui-color-outline))' }}>{downloadState.speed} | {downloadState.eta}</span>
                                 </div>
-                                <md-filled-tonal-button onClick={cancelDownload} style={{ '--md-filled-tonal-button-container-color': 'var(--md-sys-color-error-container)', '--md-filled-tonal-button-label-text-color': 'var(--md-sys-color-on-error-container)', cursor: 'pointer' }}>
+                                <mdui-button variant="tonal" onClick={cancelDownload} style={{ cursor: 'pointer' }}>
                                     Скасувати
-                                </md-filled-tonal-button>
+                                </mdui-button>
                             </div>
 
-                            <div style={{ fontSize: '12px', color: 'var(--md-sys-color-outline', marginBottom: '8px' }}>
+                            <div style={{ fontSize: '12px', color: 'rgb(var(--mdui-color-outline))', marginBottom: '8px' }}>
                                 Файл {downloadState.currentFileIndex} з {downloadState.totalFiles}: {downloadState.fileName}
                             </div>
                             
@@ -642,40 +657,40 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                                 <span>Прогрес: {downloadState.overallProgress}%</span>
                                 <span>{downloadState.loaded}</span>
                             </div>
-                            <md-linear-progress value={downloadState.overallProgress / 100}></md-linear-progress>
+                            <mdui-linear-progress value={downloadState.overallProgress / 100}></mdui-linear-progress>
                         </div>
                     ) : (
                         <>
                             {!cfToken ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '16px' }}>
-                                    <md-circular-progress indeterminate></md-circular-progress>
-                                    <span style={{ color: 'var(--md-sys-color-outline)' }}>Очікування перевірки безпеки...</span>
+                                    <mdui-circular-progress indeterminate></mdui-circular-progress>
+                                    <span style={{ color: 'rgb(var(--mdui-color-outline))' }}>Очікування перевірки безпеки...</span>
                                 </div>
                             ) : (
                                 <>
                                     <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '12px' }}>
                                         {availableProviders.length > 0 ? availableProviders.map((prov, i) => (
-                                            <md-filter-chip
+                                            <mdui-chip
                                                 key={i}
-                                                label={formatProviderName(prov)} 
+                                                variant="filter"
                                                 selected={prov === selectedProvider ? true : undefined}
                                                 onClick={() => setSelectedProvider(prov)}
                                                 style={{ cursor: 'pointer' }}
-                                            />
+                                            >{formatProviderName(prov)}</mdui-chip>
                                         )) : (
-                                            <span style={{color: 'var(--md-sys-color-outline)'}}>Джерела не знайдені</span>
+                                            <span style={{color: 'rgb(var(--mdui-color-outline))'}}>Джерела не знайдені</span>
                                         )}
                                     </div>
 
                                     {selectedProvider && (
                                         <div style={{ 
-                                            background: 'var(--md-sys-color-surface-container-high)', 
+                                            background: 'rgb(var(--mdui-color-surface-container-high))', 
                                             padding: '24px', borderRadius: '16px',
                                             display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center'
                                         }}>
                                             <div style={{ textAlign: 'center', marginBottom: '8px' }}>
                                                 <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{formatProviderName(selectedProvider)}</div>
-                                                <div style={{ fontSize: '14px', color: 'var(--md-sys-color-outline)' }}>
+                                                <div style={{ fontSize: '14px', color: 'rgb(var(--mdui-color-outline))' }}>
                                                     Оберіть якість для завантаження
                                                 </div>
                                             </div>
@@ -683,24 +698,24 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                                             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
                                                 {type === 'movie' ? (
                                                     <>
-                                                        <md-filled-tonal-button onClick={() => handleMovieDownload('1080')} style={{ cursor: 'pointer' }}>
-                                                            <md-icon slot="icon">hd</md-icon> 1080p
-                                                        </md-filled-tonal-button>
-                                                        <md-filled-tonal-button onClick={() => handleMovieDownload('720')} style={{ cursor: 'pointer' }}>
-                                                            <md-icon slot="icon">sd</md-icon> 720p
-                                                        </md-filled-tonal-button>
-                                                        <md-filled-tonal-button onClick={() => handleMovieDownload('480')} style={{ cursor: 'pointer' }}>
-                                                            <md-icon slot="icon">smartphone</md-icon> 480p
-                                                        </md-filled-tonal-button>
+                                                        <mdui-button variant="tonal" onClick={() => handleMovieDownload('1080')} style={{ cursor: 'pointer' }}>
+                                                            <mdui-icon slot="icon" name="hd"></mdui-icon> 1080p
+                                                        </mdui-button>
+                                                        <mdui-button variant="tonal" onClick={() => handleMovieDownload('720')} style={{ cursor: 'pointer' }}>
+                                                            <mdui-icon slot="icon" name="sd"></mdui-icon> 720p
+                                                        </mdui-button>
+                                                        <mdui-button variant="tonal" onClick={() => handleMovieDownload('480')} style={{ cursor: 'pointer' }}>
+                                                            <mdui-icon slot="icon" name="smartphone"></mdui-icon> 480p
+                                                        </mdui-button>
                                                     </>
                                                 ) : (
-                                                    <md-filled-button onClick={openSeriesModal} style={{ cursor: 'pointer' }}>
-                                                        <md-icon slot="icon">video_library</md-icon>
+                                                    <mdui-button variant="filled" onClick={openSeriesModal} style={{ cursor: 'pointer' }}>
+                                                        <mdui-icon slot="icon" name="video_library"></mdui-icon>
                                                         Вибрати серії
-                                                    </md-filled-button>
+                                                    </mdui-button>
                                                 )}
                                             </div>
-                                            <div style={{ fontSize: '12px', color: 'var(--md-sys-color-error)', marginTop: '8px' }}>
+                                            <div style={{ fontSize: '12px', color: 'rgb(var(--mdui-color-error))', marginTop: '8px' }}>
                                                 * Завантаження відбувається у браузері. Не закривайте вкладку.
                                             </div>
                                         </div>
@@ -719,7 +734,7 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
                     <div style={{ 
-                        background: 'var(--md-sys-color-surface)', 
+                        background: 'rgb(var(--mdui-color-surface))', 
                         padding: '24px', borderRadius: '16px', 
                         width: '90%', maxWidth: '600px', maxHeight: '80vh', 
                         overflowY: 'auto', display: 'flex', flexDirection: 'column'
@@ -728,7 +743,7 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                             <h3 style={{ margin: 0 }}>Оберіть серії</h3>
                             
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                <md-checkbox touch-target="wrapper" onClick={toggleAllSeries}></md-checkbox>
+                                <mdui-checkbox onClick={toggleAllSeries}></mdui-checkbox>
                                 Вибрати все
                             </label>
                         </div>
@@ -743,25 +758,24 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                                 return (
                                     <div key={sNum} style={{ marginBottom: '24px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                                            <md-checkbox 
+                                            <mdui-checkbox 
                                                 checked={isAllSelected}
                                                 indeterminate={selectedInSeason.length > 0 && !isAllSelected}
                                                 onClick={() => toggleSeason(sNum)}
-                                                touch-target="wrapper"
-                                            ></md-checkbox>
+                                            ></mdui-checkbox>
                                             <div style={{ fontWeight: 'bold' }}>Сезон {sNum}</div>
                                         </div>
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingLeft: '40px' }}>
                                             {allEps.map(ep => {
                                                 const isSelected = selectedInSeason.includes(ep);
                                                 return (
-                                                    <md-filter-chip 
-                                                        key={ep} 
-                                                        label={`${ep}`} 
-                                                        selected={isSelected ? true : undefined}
-                                                        onClick={() => toggleEpisode(sNum, ep)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    />
+                                    <mdui-chip
+                                        key={`${seasonIdx}-${ep}`}
+                                        variant="filter"
+                                        selected={selectedEpisodes[seasonIdx]?.includes(ep) ? true : undefined}
+                                        onClick={() => toggleEpisode(seasonIdx, ep)}
+                                        style={{ cursor: 'pointer' }}
+                                    >{ep}</mdui-chip>
                                                 );
                                             })}
                                         </div>
@@ -770,10 +784,10 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
                             })}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                            <md-text-button onClick={() => setShowSeriesModal(false)} style={{ cursor: 'pointer' }}>Скасувати</md-text-button>
-                            <md-filled-button onClick={handleSeriesDownload} style={{ cursor: 'pointer' }}>
+                            <mdui-button variant="text" onClick={() => setShowSeriesModal(false)} style={{ cursor: 'pointer' }}>Скасувати</mdui-button>
+                            <mdui-button variant="filled" onClick={handleSeriesDownload} style={{ cursor: 'pointer' }}>
                                 Завантажити ZIP
-                            </md-filled-button>
+                            </mdui-button>
                         </div>
                     </div>
                 </div>
@@ -781,34 +795,34 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
 
     {activeTab === 'torrents' && (
         <div>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                <md-outlined-select label="Трекер" value={filterTracker} onInput={e => setFilterTracker(e.target.value)}>
-                    {filterOptions.trackers.map(t => <md-select-option key={t} value={t}><div slot="headline">{t}</div></md-select-option>)}
-                </md-outlined-select>
-                <md-outlined-select label="Якість" value={filterQuality} onInput={e => setFilterQuality(e.target.value)}>
-                    {filterOptions.qualities.map(q => <md-select-option key={q} value={q}><div slot="headline">{q === 'All' ? 'Всі' : q}</div></md-select-option>)}
-                </md-outlined-select>
-                <md-outlined-select label="Кодек" value={filterCodec} onInput={e => setFilterCodec(e.target.value)}>
-                    {filterOptions.codecs.map(c => <md-select-option key={c} value={c}><div slot="headline">{c === 'All' ? 'Всі' : c}</div></md-select-option>)}
-                </md-outlined-select>
-                <md-outlined-select label="Аудіо" value={filterAudio} onInput={e => setFilterAudio(e.target.value)}>
-                    {filterOptions.audios.map(a => <md-select-option key={a} value={a}><div slot="headline">{a === 'All' ? 'Всі' : a}</div></md-select-option>)}
-                </md-outlined-select>
-                <md-outlined-select label="Субтитри" value={filterSub} onInput={e => setFilterSub(e.target.value)}>
-                    {filterOptions.subs.map(s => <md-select-option key={s} value={s}><div slot="headline">{s === 'All' ? 'Всі' : s}</div></md-select-option>)}
-                </md-outlined-select>
-                <md-outlined-select label="Сортування" value={sortBy} onInput={e => setSortBy(e.target.value)}>
-                    <md-select-option value="seeders"><div slot="headline">Сідери</div></md-select-option>
-                    <md-select-option value="leechers"><div slot="headline">Лічери</div></md-select-option>
-                    <md-select-option value="size"><div slot="headline">Розмір</div></md-select-option>
-                </md-outlined-select>
+            <div ref={filterContainerRef} style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                <mdui-select variant="outlined" label="Трекер" value={filterTracker}>
+                    {filterOptions.trackers.map(t => <mdui-menu-item key={t} value={t}>{t}</mdui-menu-item>)}
+                </mdui-select>
+                <mdui-select variant="outlined" label="Якість" value={filterQuality}>
+                    {filterOptions.qualities.map(q => <mdui-menu-item key={q} value={q}>{q === 'All' ? 'Всі' : q}</mdui-menu-item>)}
+                </mdui-select>
+                <mdui-select variant="outlined" label="Кодек" value={filterCodec}>
+                    {filterOptions.codecs.map(c => <mdui-menu-item key={c} value={c}>{c === 'All' ? 'Всі' : c}</mdui-menu-item>)}
+                </mdui-select>
+                <mdui-select variant="outlined" label="Аудіо" value={filterAudio}>
+                    {filterOptions.audios.map(a => <mdui-menu-item key={a} value={a}>{a === 'All' ? 'Всі' : a}</mdui-menu-item>)}
+                </mdui-select>
+                <mdui-select variant="outlined" label="Субтитри" value={filterSub}>
+                    {filterOptions.subs.map(s => <mdui-menu-item key={s} value={s}>{s === 'All' ? 'Всі' : s}</mdui-menu-item>)}
+                </mdui-select>
+                <mdui-select variant="outlined" label="Сортування" value={sortBy}>
+                    <mdui-menu-item value="seeders">Сідери</mdui-menu-item>
+                    <mdui-menu-item value="leechers">Лічери</mdui-menu-item>
+                    <mdui-menu-item value="size">Розмір</mdui-menu-item>
+                </mdui-select>
             </div>
 
-            {loadingTorrents && <md-linear-progress indeterminate></md-linear-progress>}
+            {loadingTorrents && <mdui-linear-progress indeterminate></mdui-linear-progress>}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {torrents.length === 0 && !loadingTorrents && (
-                    <div style={{color: 'var(--md-sys-color-outline)', textAlign: 'center'}}>Торрентів не знайдено</div>
+                    <div style={{color: 'rgb(var(--mdui-color-outline))', textAlign: 'center'}}>Торрентів не знайдено</div>
                 )}
                 {filteredTorrents.map((t, i) => {
                     const uniqueAudio = new Set();
@@ -853,81 +867,74 @@ const Downloader = ({ id, title, originalTitle, year, type, providers, onClose }
 
                     return (
                         <div key={i} style={{ 
-                            background: 'var(--md-sys-color-surface-container-high)', 
+                            background: 'rgb(var(--mdui-color-surface-container-high))', 
                             padding: '16px', borderRadius: '12px',
                             display: 'flex', flexDirection: 'column', gap: '12px'
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '16px' }}>
-                                <span style={{ fontWeight: 500, fontSize: '15px', color: 'var(--md-sys-color-on-surface)', lineHeight: '1.4' }}>{t.Title}</span>
+                                <span style={{ fontWeight: 500, fontSize: '15px', color: 'rgb(var(--mdui-color-on-surface))', lineHeight: '1.4' }}>{t.Title}</span>
                                 
                                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                                     {t.MagnetUri && (
-                                        <md-filled-tonal-button onClick={() => window.location.href = t.MagnetUri} style={{ cursor: 'pointer' }}>
-                                            <md-icon slot="icon">link</md-icon>
+                                        <mdui-button variant="tonal" onClick={() => window.location.href = t.MagnetUri} style={{ cursor: 'pointer' }}>
+                                            <mdui-icon slot="icon" name="link"></mdui-icon>
                                             Magnet
-                                        </md-filled-tonal-button>
+                                        </mdui-button>
                                     )}
                                     {t.Link && (
-                                        <md-outlined-button onClick={() => window.open(t.Link, '_blank')} style={{ cursor: 'pointer' }}>
-                                            <md-icon slot="icon">download</md-icon>
+                                        <mdui-button variant="outlined" onClick={() => window.open(t.Link, '_blank')} style={{ cursor: 'pointer' }}>
+                                            <mdui-icon slot="icon" name="download"></mdui-icon>
                                             .torrent
-                                        </md-outlined-button>
+                                        </mdui-button>
                                     )}
                                 </div>
                             </div>
                             <div className="chips-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                                <md-assist-chip label={t.Tracker} />
-                                <md-assist-chip label={formatBytes(t.Size)}>
-                                    <md-icon slot="icon">save</md-icon>
-                                </md-assist-chip>
+                                <mdui-chip variant="assist">{t.Tracker}</mdui-chip>
+                                <mdui-chip variant="assist"><mdui-icon slot="icon" name="save"></mdui-icon>{formatBytes(t.Size)}</mdui-chip>
                                 {getVideoBadges(t).map((badge, idx) => (
-                                    <md-outlined-icon-button 
+                                    <mdui-button-icon 
                                         key={`v-${idx}`} 
+                                        variant="outlined"
                                         style={{ 
-                                            '--md-outlined-icon-button-container-width': '32px',
-                                            '--md-outlined-icon-button-container-height': '32px',
-                                            '--md-icon-button-icon-size': '20px',
-                                            '--md-outlined-icon-button-container-shape': '8px',
-                                            '--md-outlined-icon-button-outline-color': 'var(--md-sys-color-primary)',
-                                            '--md-outlined-icon-button-icon-color': 'var(--md-sys-color-primary)',
                                             margin: '0 2px',
                                             pointerEvents: 'none'
                                         }}
                                     >
-                                        <md-icon>{badge.icon}</md-icon>
-                                    </md-outlined-icon-button>
+                                        <mdui-icon name={badge.icon}></mdui-icon>
+                                    </mdui-button-icon>
                                 ))}
                                 
                                 {audioChips.map((label, idx) => (
-                                    <md-assist-chip key={`audio-${idx}`} label={label}>
-                                        <md-icon slot="icon">headphones</md-icon>
-                                    </md-assist-chip>
+                                    <mdui-chip key={`audio-${idx}`} variant="assist">
+                                        <mdui-icon slot="icon" name="headphones"></mdui-icon>{label}
+                                    </mdui-chip>
                                 ))}
 
                                 {audioChips.length === 0 && t.ffprobe && t.ffprobe.some(s => s.codec_type === 'audio') && (
-                                    <md-assist-chip label={`${t.ffprobe.filter(s => s.codec_type === 'audio').length} Audio`}>
-                                        <md-icon slot="icon">headphones</md-icon>
-                                    </md-assist-chip>
+                                    <mdui-chip variant="assist">
+                                        <mdui-icon slot="icon" name="headphones"></mdui-icon>{`${t.ffprobe.filter(s => s.codec_type === 'audio').length} Audio`}
+                                    </mdui-chip>
                                 )}
 
                                 {subChips.map((label, idx) => (
-                                    <md-assist-chip key={`sub-${idx}`} label={label}>
-                                        <md-icon slot="icon">subtitles</md-icon>
-                                    </md-assist-chip>
+                                    <mdui-chip key={`sub-${idx}`} variant="assist">
+                                        <mdui-icon slot="icon" name="subtitles"></mdui-icon>{label}
+                                    </mdui-chip>
                                 ))}
                                 
                                 {subChips.length === 0 && (t.Title.toLowerCase().includes('sub') || (t.ffprobe && t.ffprobe.some(s => s.codec_type === 'subtitle'))) && (
-                                    <md-assist-chip label="Субтитри">
-                                        <md-icon slot="icon">subtitles</md-icon>
-                                    </md-assist-chip>
+                                    <mdui-chip variant="assist">
+                                        <mdui-icon slot="icon" name="subtitles"></mdui-icon>Субтитри
+                                    </mdui-chip>
                                 )}
 
                                 <div style={{ display: 'flex', gap: '8px', fontSize: '12px', marginLeft: 'auto', alignItems: 'center' }}>
                                     <span style={{ color: '#4caf50', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                        <md-icon style={{ fontSize: '16px' }}>arrow_upward</md-icon> {t.Seeders}
+                                        <mdui-icon name="arrow_upward" style={{ fontSize: '16px' }}></mdui-icon> {t.Seeders}
                                     </span>
                                     <span style={{ color: '#f44336', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                        <md-icon style={{ fontSize: '16px' }}>arrow_downward</md-icon> {t.Peers}
+                                        <mdui-icon name="arrow_downward" style={{ fontSize: '16px' }}></mdui-icon> {t.Peers}
                                     </span>
                                 </div>
                             </div>
