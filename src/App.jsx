@@ -4,7 +4,11 @@ import LoadingBar from 'react-top-loading-bar';
 import { loaderEvent } from './api/axios';
 
 import Sidebar from './components/Sidebar';
+import { initPalette } from './utils/palette';
 import TurnstileWidget from './components/TurnstileWidget';
+import 'mdui/components/circular-progress.js';
+import 'mdui/components/icon.js';
+import 'mdui/components/button.js';
 
 const Home = React.lazy(() => import('./pages/Home'));
 const Details = React.lazy(() => import('./pages/Details'));
@@ -13,8 +17,8 @@ const Favorites = React.lazy(() => import('./pages/Favorites'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 
 const PageLoader = () => (
-  <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-    <md-circular-progress indeterminate></md-circular-progress>
+  <div style={{ minHeight: '100vh', background: 'rgb(var(--mdui-color-surface))', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <mdui-circular-progress indeterminate></mdui-circular-progress>
   </div>
 );
 
@@ -25,6 +29,8 @@ function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('uafilms_theme') || 'dark';
     document.body.setAttribute('data-theme', savedTheme);
+
+    initPalette();
 
     const startLoader = () => ref.current?.continuousStart();
     const stopLoader = () => ref.current?.complete();
@@ -49,8 +55,8 @@ function App() {
   };
 
   return (
-    <div className="app-container" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--md-sys-color-background)' }}>
-      <LoadingBar color="var(--md-sys-color-primary)" ref={ref} height={3} shadow={true} />
+    <div className="app-container" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'rgb(var(--mdui-color-surface))' }}>
+      <LoadingBar color="rgb(var(--mdui-color-primary))" ref={ref} height={3} shadow={true} />
       
       <Sidebar />
 
@@ -83,24 +89,24 @@ function App() {
             <div 
               onClick={(e) => e.stopPropagation()} 
               style={{
-                backgroundColor: 'var(--md-sys-color-surface-container-high)',
+                backgroundColor: 'rgb(var(--mdui-color-surface-container-high))',
                 padding: '24px', borderRadius: '28px', maxWidth: '400px', width: '100%',
                 textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
                 display: 'flex', flexDirection: 'column', gap: '16px'
               }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface)' }}>
-                  <md-icon style={{ color: 'var(--md-sys-color-primary)' }}>info</md-icon>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'rgb(var(--mdui-color-on-surface))' }}>
+                  <mdui-icon style={{ color: 'rgb(var(--mdui-color-primary))' }} name="info"></mdui-icon>
                   <span style={{ fontSize: '24px', fontWeight: '500' }}>Beta-тестування</span>
                 </div>
-                <div style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: '16px', lineHeight: '1.5' }}>
+                <div style={{ color: 'rgb(var(--mdui-color-on-surface-variant))', fontSize: '16px', lineHeight: '1.5' }}>
                   <p style={{ margin: 0 }}>
                     Ласкаво просимо на <b>UAFilms</b>! <br/><br/>
                     Проект знаходиться в розробці. Можливі помилки та тимчасові проблеми з джерелами.
                   </p>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
-                  <md-filled-button onClick={closeDisclaimer}>Зрозуміло</md-filled-button>
+                  <mdui-button variant="filled" onClick={closeDisclaimer}>Зрозуміло</mdui-button>
                 </div>
             </div>
          </div>
@@ -115,11 +121,11 @@ function App() {
             z-index: 9999;
          }
 
-         @media (max-width: 768px) {
-            .turnstile-container {
-                bottom: 85px; /* Піднято над Sidebar (який зазвичай 80px) */
-            }
-         }
+          @media (max-width: 768px) {
+             .turnstile-container {
+                 bottom: 110px; /* Відступ від нижньої навігації (80px) + запас */
+             }
+          }
 
          @media (min-width: 769px) {
             .app-container > div:last-child {
