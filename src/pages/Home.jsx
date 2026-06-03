@@ -7,9 +7,10 @@ import { Mousewheel } from 'swiper/modules';
 import { useNavigate } from 'react-router-dom';
 
 // Імпорти для пошуку та історії
-import '@material/web/textfield/outlined-text-field.js';
-import '@material/web/icon/icon.js';
-import '@material/web/chips/suggestion-chip.js';
+import 'mdui/components/text-field.js';
+import 'mdui/components/icon.js';
+import 'mdui/components/chip.js';
+import 'mdui/components/circular-progress.js';
 
 // SVG бейдж бета-версії
 const BetaBadge = () => (
@@ -35,7 +36,7 @@ const Section = ({ title, items, isHero = false }) => {
           marginLeft: '24px', 
           fontSize: '22px', 
           marginBottom: '16px',
-          color: 'var(--md-sys-color-on-background)' 
+          color: 'rgb(var(--mdui-color-on-surface))' 
         }}>
           {title}
         </h2>
@@ -85,39 +86,40 @@ const Home = () => {
       navigate(`/search?q=${query}`);
   };
 
-  if (!data) return <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><md-circular-progress indeterminate></md-circular-progress></div>;
+  if (!data) return <div style={{ minHeight: '100vh', background: 'rgb(var(--mdui-color-surface))', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><mdui-circular-progress indeterminate></mdui-circular-progress></div>;
 
   return (
     <div>
       <div style={{ padding: '24px', marginBottom: '5px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-            <h1 style={{ fontSize: '28px', color: 'var(--md-sys-color-primary)', margin: 0 }}>UAFilms</h1>
+            <h1 style={{ fontSize: '28px', color: 'rgb(var(--mdui-color-primary))', margin: 0 }}>UAFilms</h1>
             <BetaBadge />
         </div>
 
-        <md-outlined-text-field
+        <mdui-text-field
             label="Що будемо дивитись?"
             value={searchQuery}
             onInput={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleSearchSubmit}
-            style={{ width: '100%', '--md-outlined-text-field-container-shape': '28px' }}
+            variant="outlined"
+            style={{ width: '100%', borderRadius: '28px' }}
         >
-            <md-icon slot="leading-icon">search</md-icon>
-        </md-outlined-text-field>
+            <mdui-icon slot="leading-icon" name="search"></mdui-icon>
+        </mdui-text-field>
 
         {history.length > 0 && (
             <div style={{ marginTop: '12px' }}>
-                <div style={{ fontSize: '14px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '8px', marginLeft: '4px' }}>
+                <div style={{ fontSize: '14px', color: 'rgb(var(--mdui-color-on-surface-variant))', marginBottom: '8px', marginLeft: '4px' }}>
                     Історія пошуку:
                 </div>
                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '1px', flexWrap: 'nowrap' }}>
                     {history.map((item, index) => (
-                        <md-suggestion-chip 
+                        <mdui-chip 
                             key={index} 
-                            label={item} 
+                            variant="suggestion"
                             onClick={() => handleHistoryClick(item)}
                             style={{ cursor: 'pointer', flexShrink: 0 }}
-                        />
+                        >{item}</mdui-chip>
                     ))}
                 </div>
             </div>

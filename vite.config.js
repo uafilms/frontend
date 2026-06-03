@@ -13,9 +13,6 @@ export default defineConfig({
           // Якщо файл з node_modules
           if (id.includes('node_modules')) {
             // Виносимо важкі бібліотеки окремо
-            if (id.includes('@material/web') || id.includes('lit')) {
-              return 'material-web';
-            }
             if (id.includes('jszip')) {
               return 'jszip';
             }

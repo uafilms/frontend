@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../api/axios';
 import MovieCard from '../components/MovieCard';
-import '@material/web/textfield/outlined-text-field.js';
-import '@material/web/icon/icon.js';
-import '@material/web/button/filled-tonal-button.js';
+import 'mdui/components/text-field.js';
+import 'mdui/components/icon.js';
+import 'mdui/components/button.js';
+import 'mdui/components/circular-progress.js';
 
 const Search = () => {
   const [query, setQuery] = useState('');
@@ -91,7 +92,7 @@ const Search = () => {
   return (
     <div className="container" style={{ padding: '24px' }}>
       <div style={{ marginBottom: '24px' }}>
-        <md-outlined-text-field
+        <mdui-text-field
           label="Пошук фільмів..."
           type="search"
           value={query}
@@ -99,13 +100,14 @@ const Search = () => {
           onKeyDown={handleKeyDown}
           autocomplete="on"
           name="q"
+          variant="outlined"
           style={{ 
-            width: '100%', 
-            '--md-outlined-text-field-container-shape': '28px' 
+            width: '100%',
+            borderRadius: '28px'
           }}
         >
-          <md-icon slot="leading-icon">search</md-icon>
-        </md-outlined-text-field>
+          <mdui-icon slot="leading-icon" name="search"></mdui-icon>
+        </mdui-text-field>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
@@ -116,17 +118,17 @@ const Search = () => {
 
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px', paddingBottom: '32px' }}>
-            <md-circular-progress indeterminate></md-circular-progress>
+            <mdui-circular-progress indeterminate></mdui-circular-progress>
         </div>
       ) : (
         results.length > 0 && page < totalPages && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '32px', paddingBottom: '32px' }}>
-              <md-filled-tonal-button 
+              <mdui-button variant="tonal" 
                   onClick={loadMore}
                   style={{ cursor: 'pointer' }}
               >
                   Завантажити ще
-              </md-filled-tonal-button>
+              </mdui-button>
           </div>
         )
       )}

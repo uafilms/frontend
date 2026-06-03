@@ -1,5 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import 'mdui/components/ripple.js';
+import 'mdui/components/icon.js';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -14,27 +16,26 @@ const Sidebar = () => {
         onClick={() => navigate(to)}
       >
         <div className="nav-icon-wrapper">
-          <md-ripple></md-ripple>
+          <mdui-ripple></mdui-ripple>
           <span
             className={`nav-pill${isActive ? ' nav-pill-active' : ''}`}
           />
-          <md-icon
+          <mdui-icon
             style={{
               position: 'relative',
               zIndex: 1,
-              color: isActive ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface-variant)',
+              color: isActive ? 'rgb(var(--mdui-color-on-secondary-container))' : 'rgb(var(--mdui-color-on-surface-variant))',
               transition: 'color 200ms ease',
               fontSize: '24px',
             }}
-          >
-            {isActive ? (selectedIcon || icon) : icon}
-          </md-icon>
+            name={isActive ? (selectedIcon || icon) : icon}
+          ></mdui-icon>
         </div>
         <span
           className="nav-label"
           style={{
             fontWeight: isActive ? 700 : 500,
-            color: isActive ? 'var(--md-sys-color-on-surface)' : 'var(--md-sys-color-on-surface-variant)',
+            color: isActive ? 'rgb(var(--mdui-color-on-surface))' : 'rgb(var(--mdui-color-on-surface-variant))',
           }}
         >
           {label}
@@ -53,7 +54,7 @@ const Sidebar = () => {
           height: 100vh;
           position: sticky;
           top: 0;
-          background-color: var(--md-sys-color-surface);
+          background-color: rgb(var(--mdui-color-surface));
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -62,7 +63,7 @@ const Sidebar = () => {
         }
         .sidebar-logo {
           margin-bottom: 28px;
-          color: var(--md-sys-color-primary);
+          color: rgb(var(--mdui-color-primary));
           display: flex;
           align-items: center;
           justify-content: center;
@@ -97,7 +98,7 @@ const Sidebar = () => {
           position: absolute;
           inset: 0;
           border-radius: 16px;
-          background-color: var(--md-sys-color-secondary-container);
+          background-color: rgb(var(--mdui-color-secondary-container));
           opacity: 0;
           transform: scaleX(0.6);
           transition: opacity 200ms ease, transform 200ms ease;
@@ -128,9 +129,9 @@ const Sidebar = () => {
             flex-direction: row;
             padding-top: 0;
             padding-bottom: env(safe-area-inset-bottom);
-            border-top: 1px solid var(--md-sys-color-outline-variant);
+            border-top: 1px solid rgb(var(--mdui-color-outline-variant));
             justify-content: space-around;
-            background-color: var(--md-sys-color-surface-container);
+            background-color: rgb(var(--mdui-color-surface-container));
           }
           .sidebar-logo {
             display: none;

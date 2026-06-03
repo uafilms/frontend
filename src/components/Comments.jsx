@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { findAndFilter } from 'swearify';
 
-import '@material/web/button/outlined-button.js';
+import 'mdui/components/button.js';
+import 'mdui/components/circular-progress.js';
 
 const filterText = (text, enabled) => {
     if (!enabled || !text) return text;
@@ -27,22 +28,22 @@ const CommentItem = ({ comment, filterProfanity }) => {
                 />
                 <div style={{ flex: 1 }}>
                     <div style={{ 
-                        background: 'var(--md-sys-color-surface-container)', 
+                        background: 'rgb(var(--mdui-color-surface-container))', 
                         padding: '12px 16px', borderRadius: '16px',
-                        border: '1px solid var(--md-sys-color-outline-variant)'
+                        border: '1px solid rgb(var(--mdui-color-outline-variant))'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
-                            <span style={{ fontWeight: '600', color: 'var(--md-sys-color-primary)', fontSize: '14px' }}>
+                            <span style={{ fontWeight: '600', color: 'rgb(var(--mdui-color-primary))', fontSize: '14px' }}>
                                 {comment.author}
                             </span>
-                            <span style={{ fontSize: '12px', color: 'var(--md-sys-color-outline)', opacity: 0.8 }}>
+                            <span style={{ fontSize: '12px', color: 'rgb(var(--mdui-color-outline))', opacity: 0.8 }}>
                                 {comment.date}
                             </span>
                         </div>
                         <div style={{ 
                             fontSize: '14px', 
                             lineHeight: '1.5', 
-                            color: 'var(--md-sys-color-on-surface)',
+                            color: 'rgb(var(--mdui-color-on-surface))',
                             whiteSpace: 'pre-wrap', 
                             wordBreak: 'break-word'
                         }}>
@@ -53,7 +54,7 @@ const CommentItem = ({ comment, filterProfanity }) => {
             </div>
             
             {comment.children && comment.children.length > 0 && (
-                <ul style={{ paddingLeft: '24px', borderLeft: '2px solid var(--md-sys-color-outline-variant)', marginLeft: '20px', marginTop: '8px' }}>
+                <ul style={{ paddingLeft: '24px', borderLeft: '2px solid rgb(var(--mdui-color-outline-variant))', marginLeft: '20px', marginTop: '8px' }}>
                     {comment.children.map((child, idx) => (
                         <CommentItem key={idx} comment={child} filterProfanity={filterProfanity} />
                     ))}
@@ -137,7 +138,7 @@ const Comments = ({ title, imdbId }) => {
 
     return (
         <div style={{ marginTop: '40px', maxWidth: '800px' }}>
-            <h3 style={{ fontSize: '20px', marginBottom: '16px', color: 'var(--md-sys-color-on-background)' }}>
+            <h3 style={{ fontSize: '20px', marginBottom: '16px', color: 'rgb(var(--mdui-color-on-surface))' }}>
                 Коментарі
             </h3>
             
@@ -145,21 +146,21 @@ const Comments = ({ title, imdbId }) => {
                 {comments.map((c, i) => <CommentItem key={i} comment={c} filterProfanity={filterProfanity} />)}
             </ul>
             
-            {loading && <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}><md-circular-progress indeterminate></md-circular-progress></div>}
+            {loading && <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}><mdui-circular-progress indeterminate></mdui-circular-progress></div>}
 
             {!loading && hasMore && comments.length > 0 && (
                 <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
-                    <md-outlined-button 
+                    <mdui-button variant="outlined"
                         onClick={handleLoadMore}
                         style={{ width: '100%' }}
                     >
                         Завантажити ще коментарі
-                    </md-outlined-button>
+                    </mdui-button>
                 </div>
             )}
 
             {!loading && comments.length === 0 && (
-                <div style={{ color: 'var(--md-sys-color-outline-variant)' }}>Коментарів поки немає.</div>
+                <div style={{ color: 'rgb(var(--mdui-color-outline-variant))' }}>Коментарів поки немає.</div>
             )}
         </div>
     );

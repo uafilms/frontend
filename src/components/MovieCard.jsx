@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '@material/web/ripple/ripple.js';
-import '@material/web/icon/icon.js';
+import 'mdui/components/ripple.js';
+import 'mdui/components/icon.js';
 
 const MovieCard = ({ movie, isHero = false }) => {
   const navigate = useNavigate();
@@ -43,14 +43,14 @@ const MovieCard = ({ movie, isHero = false }) => {
           height: height, 
           borderRadius: '16px', 
           overflow: 'hidden', 
-          backgroundColor: 'var(--md-sys-color-surface-container)',
+          backgroundColor: 'rgb(var(--mdui-color-surface-container))',
           position: 'relative',
           cursor: 'pointer',
           transition: 'transform 0.2s',
           boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
         }}
       >
-        <md-ripple></md-ripple>
+        <mdui-ripple></mdui-ripple>
 
         {!showPlaceholder ? (
           <img 
@@ -68,19 +68,17 @@ const MovieCard = ({ movie, isHero = false }) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, var(--md-sys-color-surface-container-high) 0%, var(--md-sys-color-surface-container) 100%)',
-            color: 'var(--md-sys-color-on-surface-variant)',
+            background: 'linear-gradient(135deg, rgb(var(--mdui-color-surface-container-high)) 0%, rgb(var(--mdui-color-surface-container)) 100%)',
+            color: 'rgb(var(--mdui-color-on-surface-variant))',
             padding: '16px',
             boxSizing: 'border-box'
           }}>
-            <md-icon style={{ 
+            <mdui-icon style={{ 
                 fontSize: '48px', 
                 marginBottom: '8px', 
                 opacity: 0.5,
-                color: 'var(--md-sys-color-primary)' 
-            }}>
-                {type === 'movie' ? 'movie' : 'tv'}
-            </md-icon>
+                color: 'rgb(var(--mdui-color-primary))' 
+            }} name={type === 'movie' ? 'movie' : 'tv'}></mdui-icon>
             {!isHero && (
                 <span style={{ 
                     fontSize: '12px', 
@@ -117,11 +115,11 @@ const MovieCard = ({ movie, isHero = false }) => {
             whiteSpace: 'nowrap', 
             overflow: 'hidden', 
             textOverflow: 'ellipsis',
-            color: 'var(--md-sys-color-on-surface)'
+            color: 'rgb(var(--mdui-color-on-surface))'
           }}>
             {movie.title || movie.name}
           </h4>
-          <span style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+          <span style={{ fontSize: '12px', color: 'rgb(var(--mdui-color-on-surface-variant))' }}>
             {(movie.release_date || movie.first_air_date || '').split('-')[0]}
           </span>
         </div>
