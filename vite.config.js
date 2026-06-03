@@ -19,10 +19,8 @@ export default defineConfig({
             if (id.includes('swiper')) {
               return 'swiper';
             }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'react-vendor';
-            }
-            // Все інше - у загальний vendor файл
+            // Все інше (включно з react, mdui, lit) — у vendor,
+            // щоб уникнути circular dependency між чанками
             return 'vendor';
           }
         }
