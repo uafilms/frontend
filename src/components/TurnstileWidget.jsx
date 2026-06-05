@@ -98,7 +98,7 @@ const TurnstileWidget = () => {
           'expired-callback': () => {
             window.cfToken = null;
             tokenReadyFired.current = false;
-            setState('interactive');
+            setState('checking');
             setCardVisible(true);
             if (overlayRef.current) overlayRef.current.style.display = '';
             if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
