@@ -80,8 +80,7 @@ cp .env.example .env
 
 Update the values in `.env`:
 * `VITE_API_BASE_URL`: The URL of your running backend API.
-* `VITE_TURNSTILE_ENABLED`: Set to `true` if bot protection is required.
-* `VITE_TURNSTILE_SITE_KEY`: Your Cloudflare Turnstile site key.
+
 
 
 

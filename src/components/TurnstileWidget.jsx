@@ -40,10 +40,7 @@ const TurnstileWidget = () => {
         setConfig(data.turnstile);
       } catch {
         if (cancelled) return;
-        setConfig({
-          enabled: import.meta.env.VITE_TURNSTILE_ENABLED === 'true',
-          siteKey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
-        });
+        setConfig({ enabled: false, siteKey: '' });
       }
     };
     loadConfig();
